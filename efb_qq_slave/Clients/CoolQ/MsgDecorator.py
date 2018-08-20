@@ -146,7 +146,8 @@ class QQMsgProcessor:
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Text
         efb_msg.text = text
-        if not ats:  # This is used to replace specific text with @blahblah
+        if ats:  # This is used to replace specific text with @blahblah
+            # And Milkice really requires a brain check
             efb_msg.substitutions = EFBMsgSubstitutions(ats)
         return efb_msg
 

@@ -73,8 +73,13 @@ class ChatManager:
         efb_chat = EFBChat(self.channel)
         uid = context['user_id']
         efb_chat.chat_uid = 'private' + '_' + str(uid)
-        i: dict = self.channel.QQClient.get_stranger_info(uid)
-        efb_chat.chat_name = i['nickname'] if 'nickname' not in context else context['nickname']
+        chat_name = ''
+        if 'nickname' not in context:
+            i: dict = self.channel.QQClient.get_stranger_info(uid)
+            chat_name = i['nickname']
+        else:
+            chat_name = context['nickname']
+        efb_chat.chat_name = chat_name
         efb_chat.chat_alias = None if 'alias' not in context else context['alias']
         efb_chat.chat_type = ChatType.User
         efb_chat.is_chat = is_chat

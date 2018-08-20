@@ -63,10 +63,13 @@ class CoolQ(BaseClient):
                     my_uid = self.get_qq_uid()
                     self.logger.debug('My QQ uid: %s\n'
                                       'QQ who is mentioned: %s\n', my_uid, msg_data['qq'])
-                    # todo Buggy!
+                    # todo Recheck if bug exists
                     if str(my_uid) == str(msg_data['qq']) or str(msg_data['qq']) == 'all':
-                        main_text += '@{}'.format(my_uid)
-                        at_list[(len(main_text), len(main_text)+len(str(my_uid))+1)] = EFBChat(self.channel).self()
+                        self_nickname = self.get_login_info()['data']['nickname']
+                        substituion_begin = len(main_text) + 1
+                        substituion_end = len(main_text) + len(self_nickname) + 2
+                        main_text += ' @{} '.format(self_nickname)
+                        at_list[(substituion_begin, substituion_end)] = EFBChat(self.channel).self()
                 elif msg_type == 'location':
                     messages.append(m.qq_location_wrapper(msg_data))
                 elif msg_type == 'shake':
@@ -90,6 +93,12 @@ class CoolQ(BaseClient):
                 efb_msg = messages[i]
                 efb_msg.uid = uid + '_' + str(i)
                 if qq_uid != '80000000':
+                    if context['message_type'] == 'group':
+                        g_id = context['group_id']
+                        u_id = context['user_id']
+                        context['alias'] = self.coolq_bot.get_group_member_info(group_id=g_id, user_id=u_id)['card']
+                    if context['message_type'] == 'private':
+                        pass  # todo
                     efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
                 else:  # anonymous user in group
                     efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_anonymous_user(context)
