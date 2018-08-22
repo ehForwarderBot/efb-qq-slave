@@ -51,8 +51,18 @@ class QQMsgProcessor:
 
     def qq_image_wrapper(self, data) -> EFBMsg:
         efb_msg = EFBMsg()
-        efb_msg.type = MsgType.Image
+        if 'url' not in data:
+            efb_msg.type = MsgType.Text
+            efb_msg.text = '[Download image failed, please check on your QQ client]'
+            return efb_msg
+
         efb_msg.file = cq_get_image(data['url'])
+        if efb_msg.file is None:
+            efb_msg.type = MsgType.Text
+            efb_msg.text = '[Download image failed, please check on your QQ client]'
+            return efb_msg
+
+        efb_msg.type = MsgType.Image
         mime = magic.from_file(efb_msg.file.name, mime=True)
         if isinstance(mime, bytes):
             mime = mime.decode()
@@ -60,7 +70,7 @@ class QQMsgProcessor:
         efb_msg.mime = mime
         return efb_msg
 
-    def qq_audio_wrapper(self, data) -> EFBMsg:
+    def qq_record_wrapper(self, data) -> EFBMsg:
         # todo Add audio support
         pass
 

@@ -3,6 +3,7 @@ import json
 import logging
 import tempfile
 import urllib.request
+from urllib.error import URLError, HTTPError, ContentTooShortError
 
 import requests
 from ehforwarderbot import EFBMsg, coordinator
@@ -149,11 +150,16 @@ qq_sface_list = {
 
 def cq_get_image(image_link: str) -> tempfile:  # Download image from QQ
     file = tempfile.NamedTemporaryFile()
-    urllib.request.urlretrieve(image_link, file.name)
-    if file.seek(0, 2) <= 0:
-        raise EOFError('File downloaded is Empty')
-    file.seek(0)
-    return file
+    try:
+        urllib.request.urlretrieve(image_link, file.name)
+    except (URLError, HTTPError, ContentTooShortError):
+        logging.getLogger(__name__).warning('Image download failed.')
+        return None
+    else:
+        if file.seek(0, 2) <= 0:
+            raise EOFError('File downloaded is Empty')
+        file.seek(0)
+        return file
 
 
 def async_send_messages_to_master(msg: EFBMsg):

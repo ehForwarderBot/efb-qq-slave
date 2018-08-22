@@ -1,14 +1,19 @@
 # coding: utf-8
+import html
 import json
 import logging
 import tempfile
 import threading
+import time
 import uuid
 
-from typing import Any, Dict
+from typing import Any, Dict, Callable
 
+import cqhttp
 from PIL import Image
-from ehforwarderbot import EFBMsg, MsgType, EFBChat, EFBChannel, coordinator
+from ehforwarderbot import EFBMsg, MsgType, EFBChat, EFBChannel, coordinator, ChatType
+from ehforwarderbot.exceptions import EFBException, EFBMessageError, EFBChatNotFound, EFBOperationNotSupported
+from requests import RequestException
 
 from ... import QQMessengerChannel
 from .ChatMgr import ChatManager
@@ -37,13 +42,16 @@ class CoolQ(BaseClient):
         self.channel = channel
         self.chat_manager = ChatManager(channel)
 
+        self.is_connected = False
+        self.is_logged_in = False
+        self.msg_decorator = QQMsgProcessor(instance=self)
+
         @self.coolq_bot.on_message()
         def handle_msg(context):
             self.logger.debug(repr(context))
             msg_element = context['message']
             main_text: str = ''
             messages = []
-            m = QQMsgProcessor(instance=self)
             qq_uid = context['user_id']
             at_list = {}
             for i in range(len(msg_element)):
@@ -60,32 +68,27 @@ class CoolQ(BaseClient):
                 elif msg_type == 'sface':
                     main_text += '\u2753'  # ❓
                 elif msg_type == 'at':
+                    # todo Recheck if bug exists
+                    g_id = context['group_id']
                     my_uid = self.get_qq_uid()
                     self.logger.debug('My QQ uid: %s\n'
                                       'QQ who is mentioned: %s\n', my_uid, msg_data['qq'])
-                    # todo Recheck if bug exists
+                    group_card = ''
+                    if str(msg_data['qq']) == 'all':
+                        group_card = 'all'
+                    else:
+                        member_info = self.coolq_api_query('get_group_member_info', group_id=g_id, user_id=msg_data['qq'])
+                        group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
+                    self.logger.debug('Group card: {}'.format(group_card))
+                    substitution_begin = len(main_text) + 1
+                    substitution_end = len(main_text) + len(group_card) + 2
+                    main_text += ' @{} '.format(group_card)
                     if str(my_uid) == str(msg_data['qq']) or str(msg_data['qq']) == 'all':
-                        self_nickname = self.get_login_info()['data']['nickname']
-                        substituion_begin = len(main_text) + 1
-                        substituion_end = len(main_text) + len(self_nickname) + 2
-                        main_text += ' @{} '.format(self_nickname)
-                        at_list[(substituion_begin, substituion_end)] = EFBChat(self.channel).self()
-                elif msg_type == 'location':
-                    messages.append(m.qq_location_wrapper(msg_data))
-                elif msg_type == 'shake':
-                    messages.append(m.qq_shake_wrapper(msg_data))
-                elif msg_type == 'contact':
-                    messages.append(m.qq_contact_wrapper(msg_data))
-                elif msg_type == 'music':
-                    messages.append(m.qq_music_wrapper(msg_data))
-                elif msg_type == 'image':
-                    messages.append(m.qq_image_wrapper(msg_data))
-                elif msg_type == 'record':
-                    messages.append(m.qq_audio_wrapper(msg_data))
-                elif msg_type == 'share':
-                    messages.append(m.qq_share_wrapper(msg_data))
+                        at_list[(substitution_begin, substitution_end)] = EFBChat(self.channel).self()
+                else:
+                    messages.append(self.call_msg_decorator(msg_type, msg_data))
             if main_text != "":
-                messages.append(m.qq_text_simple_wrapper(main_text, at_list))
+                messages.append(self.msg_decorator.qq_text_simple_wrapper(main_text, at_list))
             uid: str = str(uuid.uuid4())
             for i in range(len(messages)):
                 if not isinstance(messages[i], EFBMsg):
@@ -96,7 +99,9 @@ class CoolQ(BaseClient):
                     if context['message_type'] == 'group':
                         g_id = context['group_id']
                         u_id = context['user_id']
-                        context['alias'] = self.coolq_bot.get_group_member_info(group_id=g_id, user_id=u_id)['card']
+                        context['alias'] = self.coolq_api_query('get_group_member_info', group_id=g_id, user_id=u_id)[
+                            'card']
+                        # context['alias'] = self.coolq_bot.get_group_member_info(group_id=g_id, user_id=u_id)['card']
                     if context['message_type'] == 'private':
                         pass  # todo
                     efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
@@ -111,7 +116,7 @@ class CoolQ(BaseClient):
                 efb_msg.deliver_to = coordinator.master
 
                 def send_message_wrapper(*args, **kwargs):
-                    threading.Thread(target=async_send_messages_to_master, args=args, kwargs=kwargs).run()
+                    threading.Thread(target=async_send_messages_to_master, args=args, kwargs=kwargs).start()
 
                 send_message_wrapper(efb_msg)
 
@@ -127,20 +132,25 @@ class CoolQ(BaseClient):
 
         self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
 
+        # threading.Thread(target=self.check_running_status).start()
+        self.check_status_periodically(threading.Event())
+
     def run_instance(self, *args, **kwargs):
         threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
 
     def relogin(self):
-        self.coolq_bot.set_restart()
+        self.coolq_api_query('set_restart')
+        # self.coolq_bot.set_restart()
 
     def logout(self):
         raise NotImplementedError
 
     def login(self):
-        raise NotImplementedError
+        return self.check_status_periodically(None)
 
     def get_stranger_info(self, user_id):
-        return self.coolq_bot.get_stranger_info(user_id=user_id, no_cache=False)
+        return self.coolq_api_query('get_stranger_info', user_id=user_id, no_cache=False)
+        # return self.coolq_bot.get_stranger_info(user_id=user_id, no_cache=False)
 
     def get_login_info(self) -> Dict[Any, Any]:
         res = self.coolq_bot.get_status()
@@ -152,7 +162,8 @@ class CoolQ(BaseClient):
 
     def get_groups(self):
         # todo Add support for discuss group iteration
-        res = self.coolq_bot.get_group_list()
+        res = self.coolq_api_query('get_group_list')
+        # res = self.coolq_bot.get_group_list()
         groups = []
         for i in range(len(res)):
             context = {'message_type': 'group',
@@ -163,7 +174,8 @@ class CoolQ(BaseClient):
 
     def get_friends(self):
         # Warning: Experimental API
-        res = self.coolq_bot._get_friend_list()
+        res = self.coolq_api_query('_get_friend_list')
+        # res = self.coolq_bot._get_friend_list()
         users = []
         for i in range(len(res)):  # friend group
             for j in range(len(res[i]['friends'])):
@@ -245,6 +257,10 @@ class CoolQ(BaseClient):
         # todo More MsgType Support
         return msg
 
+    def call_msg_decorator(self, msg_type: str, *args):
+        func = getattr(self.msg_decorator, 'qq_{}_wrapper'.format(msg_type))
+        return func(*args)
+
     def get_qq_uid(self):
         res = self.get_login_info()
         if res['status'] == 0:
@@ -252,13 +268,15 @@ class CoolQ(BaseClient):
         else:
             return None
 
-    def get_group_member_info(self, group_id, user_id) -> tuple:
-        res = self.coolq_bot.get_group_member_info(group_id=group_id, user_id=user_id, no_cache=True)
+    def get_group_member_info(self, group_id, user_id):
+        res = self.coolq_api_query('get_group_member_info', group_id=group_id, user_id=user_id, no_cache=True)
+        # res = self.coolq_bot.get_group_member_info(group_id=group_id, user_id=user_id, no_cache=True)
         return res
         pass
 
     def get_group_info(self, group_id):
-        res = self.coolq_bot.get_group_list()
+        res = self.coolq_api_query('get_group_list')
+        # res = self.coolq_bot.get_group_list()
         for i in range(len(res)):
             if res[i]['group_id'] == group_id:
                 return res[i]
@@ -266,5 +284,82 @@ class CoolQ(BaseClient):
 
     def coolq_send_message(self, msg_type, uid, message):
         keyword = msg_type if msg_type != 'private' else 'user'
-        res = self.coolq_bot.send_msg(message_type=msg_type, **{keyword + '_id': uid}, message=message)
+        res = self.coolq_api_query('send_msg', message_type=msg_type, **{keyword + '_id': uid}, message=message)
+        # res = self.coolq_bot.send_msg(message_type=msg_type, **{keyword + '_id': uid}, message=message)
         return str(uuid.uuid4()) + '_' + str(res['message_id'])
+
+    def coolq_api_wrapper(self, func_name, **kwargs):
+        try:
+            func = getattr(self.coolq_bot, func_name)
+            res = func(**kwargs)
+        except RequestException as e:
+            raise EFBOperationNotSupported('Unable to connect to CoolQ Client! Error Message:\n{}'.format(repr(e)))
+        except cqhttp.Error as ex:
+            raise EFBOperationNotSupported('CoolQ HTTP API encountered an error!\n'
+                                           'Status Code:{} Return Code:{}'.format(ex.status_code, ex.retcode))
+        else:
+            return res
+
+    def check_running_status(self):
+        res = self.coolq_api_wrapper('get_status')
+        if res['good'] or res['online']:
+            return True
+        else:
+            raise EFBMessageError("CoolQ Client isn't working correctly!")
+
+    def coolq_api_query(self, func_name, **kwargs):
+        """ # Do not call get_status too frequently
+        if self.check_running_status():
+            return self.coolq_api_wrapper(func_name, **kwargs)
+        """
+        if self.is_logged_in and self.is_connected:
+            return self.coolq_api_wrapper(func_name, **kwargs)
+        else:
+            self.deliver_alert_to_master('Your status is offline.\n'
+                                         'You may try login with /login')
+
+    def check_status_periodically(self, t_event):
+        self.logger.debug('Start checking status...')
+        flag = True
+        interval = 300
+        try:
+            flag = self.check_running_status()
+        except EFBOperationNotSupported as e:
+            self.deliver_alert_to_master("We're unable to communicate with CoolQ Client.\n"
+                                         "Please check the connection and credentials provided.\n"
+                                         "{}".format(repr(e)))
+            self.is_connected = False
+            self.is_logged_in = False
+            interval = 3600
+        except EFBMessageError:
+            self.deliver_alert_to_master('CoolQ is running in abnormal status.\n'
+                                         'You may need to relogin your account or have a check in CoolQ Client.\n')
+            self.is_connected = True
+            self.is_logged_in = False
+            interval = 3600
+        else:
+            if not flag:
+                self.deliver_alert_to_master("We don't know why, but status check failed.\n"
+                                             "Please enable debug mode and consult the log for more details.")
+                self.is_connected = True
+                self.is_logged_in = False
+                interval = 3600
+            else:
+                self.logger.debug('Status: OK')
+                self.is_connected = True
+                self.is_logged_in = True
+
+        if t_event is not None and not t_event.is_set():
+            threading.Timer(interval, self.check_status_periodically, [t_event]).start()
+
+    def deliver_alert_to_master(self, message: str):
+        msg = EFBMsg()
+        chat = EFBChat(self.channel).system()
+        chat.chat_type = ChatType.System
+        chat.chat_name = "CoolQ Alert"
+        msg.chat = msg.author = chat
+        msg.deliver_to = coordinator.master
+        msg.type = MsgType.Text
+        msg.uid = "__alert__.%s" % int(time.time())
+        msg.text = message
+        coordinator.send_message(msg)
