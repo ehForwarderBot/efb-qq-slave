@@ -35,6 +35,7 @@ class CoolQ(BaseClient):
 
     friend_list = {}
     group_list = {}
+    discuss_list = []
 
     def __init__(self, client_id: str, config: Dict[str, Any], channel):
         super().__init__(client_id, config)
@@ -116,6 +117,9 @@ class CoolQ(BaseClient):
                 else:
                     efb_msg.chat: EFBChat = self.chat_manager.build_efb_chat_as_group(context)
 
+                if context['message_type'] == 'discuss':
+                    self.discuss_list.append(efb_msg.chat)
+
                 efb_msg.deliver_to = coordinator.master
 
                 def send_message_wrapper(*args, **kwargs):
@@ -176,7 +180,7 @@ class CoolQ(BaseClient):
                        'group_id': res[i]['group_id']}
             efb_chat = self.chat_manager.build_efb_chat_as_group(context)
             groups.append(efb_chat)
-        return groups
+        return groups + self.discuss_list
 
     def get_friends(self):
         # Warning: Experimental API

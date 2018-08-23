@@ -101,7 +101,7 @@ class ChatManager:
             # todo Add user to efb_chat.member
         else:
             efb_chat.chat_uid = 'discuss' + '_' + str(chat_uid)
-            efb_chat.chat_name = 'Discuss Group'  # todo Find a way to distinguish from different discuss group
+            efb_chat.chat_name = 'Discuss Group' + '_' + str(chat_uid) # todo Find a way to distinguish from different discuss group
             efb_chat.vendor_specific = {'is_discuss': True}
         return efb_chat
 
