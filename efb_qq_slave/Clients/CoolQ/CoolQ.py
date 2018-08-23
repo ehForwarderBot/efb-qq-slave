@@ -33,6 +33,9 @@ class CoolQ(BaseClient):
     logger: logging.Logger = logging.getLogger(__name__)
     channel: QQMessengerChannel
 
+    friend_list = {}
+    group_list = {}
+
     def __init__(self, client_id: str, config: Dict[str, Any], channel):
         super().__init__(client_id, config)
         self.client_config = config[self.client_id]
@@ -95,15 +98,15 @@ class CoolQ(BaseClient):
                     continue
                 efb_msg = messages[i]
                 efb_msg.uid = uid + '_' + str(i)
-                if qq_uid != '80000000':
+                # if qq_uid != '80000000':
+                if 'anonymous' not in context:
                     if context['message_type'] == 'group':
                         g_id = context['group_id']
-                        u_id = context['user_id']
-                        context['alias'] = self.coolq_api_query('get_group_member_info', group_id=g_id, user_id=u_id)[
+                        context['alias'] = self.coolq_api_query('get_group_member_info', group_id=g_id, user_id=qq_uid)[
                             'card']
                         # context['alias'] = self.coolq_bot.get_group_member_info(group_id=g_id, user_id=u_id)['card']
                     if context['message_type'] == 'private':
-                        pass  # todo
+                        context['alias'] = self.get_friend_remark(qq_uid)
                     efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
                 else:  # anonymous user in group
                     efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_anonymous_user(context)
@@ -135,6 +138,8 @@ class CoolQ(BaseClient):
         # threading.Thread(target=self.check_running_status).start()
         self.check_status_periodically(threading.Event())
 
+        threading.Timer(1800, self.update_contacts_periodically, [threading.Event()]).start()
+
     def run_instance(self, *args, **kwargs):
         threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
 
@@ -162,7 +167,8 @@ class CoolQ(BaseClient):
 
     def get_groups(self):
         # todo Add support for discuss group iteration
-        res = self.coolq_api_query('get_group_list')
+        self.update_group_list()  # Force update group list
+        res = self.group_list
         # res = self.coolq_bot.get_group_list()
         groups = []
         for i in range(len(res)):
@@ -174,7 +180,8 @@ class CoolQ(BaseClient):
 
     def get_friends(self):
         # Warning: Experimental API
-        res = self.coolq_api_query('_get_friend_list')
+        self.update_friend_list()  # Force update friend list
+        res = self.friend_list
         # res = self.coolq_bot._get_friend_list()
         users = []
         for i in range(len(res)):  # friend group
@@ -363,3 +370,37 @@ class CoolQ(BaseClient):
         msg.uid = "__alert__.%s" % int(time.time())
         msg.text = message
         coordinator.send_message(msg)
+
+    def update_friend_list(self):
+        # Warning: Experimental API
+        self.friend_list = self.coolq_api_query('_get_friend_list')
+        self.logger.debug('Update friend list completed. Entries: %s', len(self.friend_list))
+
+    def update_group_list(self):
+        self.group_list = self.coolq_api_query('get_group_list')
+        self.logger.debug('Update group list completed. Entries: %s', len(self.group_list))
+
+    def update_contacts_periodically(self, t_event):
+        self.logger.debug('Start updating friend&group list')
+        interval = 1800
+        if self.is_connected and self.is_logged_in:
+            self.update_friend_list()
+            self.update_group_list()
+        self.logger.debug('Update completed')
+        if t_event is not None and not t_event.is_set():
+            threading.Timer(interval, self.update_contacts_periodically, [t_event]).start()
+
+    def get_friend_remark(self, uid):
+        if not self.friend_list:
+            self.update_friend_list()
+        for i in range(len(self.friend_list)):  # friend group
+            for j in range(len(self.friend_list[i]['friends'])):
+                current_user = self.friend_list[i]['friends'][j]
+                if current_user['user_id'] != uid:
+                    continue
+                if current_user['nickname'] == current_user['remark'] or current_user['nickname'] == '':
+                    # no remark name
+                    return current_user['nickname']
+                else:
+                    return current_user['remark']
+        return None

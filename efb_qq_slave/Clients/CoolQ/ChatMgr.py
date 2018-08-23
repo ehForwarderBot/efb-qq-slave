@@ -109,7 +109,7 @@ class ChatManager:
         efb_chat = EFBChat(self.channel)
         anonymous_data = context['anonymous']
         efb_chat.chat_uid = 'anonymous' + '_' + anonymous_data['flag']
-        efb_chat.chat_name = anonymous_data['name']
+        efb_chat.chat_name = '[Anonymous] ' + anonymous_data['name']
         efb_chat.chat_type = ChatType.User
         efb_chat.is_chat = False
         efb_chat.vendor_specific = {'is_anonymous': True,
