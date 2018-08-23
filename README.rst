@@ -2,7 +2,7 @@
 EFB QQ Slave Channel
 ####################################
 
-**Channel ID**: `milkice.qq`
+**Channel ID**: ``milkice.qq``
 
 This project is under heavy development and can't be used in production environment.
 
@@ -24,11 +24,11 @@ At this stage, please follow the following steps to install this package and sta
 
    ``pip3 install -e efb-qq-slave/``
 
-4. Enable `milkice.qq` slave channel in your `<profile directory>/config.yaml`.
+4. Enable ``milkice.qq`` slave channel in your ``<profile directory>/config.yaml``.
 
-   *Usually, this file is located in `~/.ehforwarderbot/profiles/default/config.yaml`*
+   *Usually, this file is located in* ``~/.ehforwarderbot/profiles/default/config.yaml``
 
-5. Create `config.yaml` file for `milkice.qq` slave channel to specify QQ Client.
+5. Create ``config.yaml`` file for ``milkice.qq`` slave channel to specify QQ Client.
 
    The detailed configuration steps for various QQ Clients are as follows.
 
@@ -63,32 +63,54 @@ For CoolQ binary client
              -e CQHTTP_POST_MESSAGE_FORMAT=array \ # Use array for posting(Required)
              richardchien/cqhttp:latest
 
-  *Please note that in order to ensure that ehforwarderbot is accessible from docker inside, it's recommended to have the argument --net="host" enabled. If you encounter network issues please try removing this parameter.*
+  Please note that in order to ensure that ehforwarderbot is accessible from docker inside, it's recommended to have the argument --net="host" enabled. If you encounter network issues please try removing this parameter.
 
   - For CoolQ Pro User
 
     **Please add extra argument (-e COOLQ_URL="http://dlsec.cqp.me/cqp-tuling") to docker run command so that docker will download CoolQ Pro instead of Air**
 
+  *Please read the* `docker documentation <https://cqhttp.cc/docs/4.4/#/Docker>`_ *for more options.*
+
 - If you are using Windows -> Directly run CoolQ
+  
+  1. Download CoolQ Binary from CoolQ website
 
-    - For CoolQ Lite user:
+  - For CoolQ Lite user:
+    
+    * Download from http://dlsec.cqp.me/cqa-tuling, extract zip.
 
-      * Download from http://dlsec.cqp.me/cqa-tuling, extract zip, and run.
+  * For CoolQ Pro user:
 
-    - For CoolQ Pro user:
+    * Download from http://dlsec.cqp.me/cqp-tuling, extract zip.
+   
+  2. Download CoolQ HTTP API from `Github Releases <https://github.com/richardchien/coolq-http-api/releases>`_ and then drop it in ``app/`` folder
 
-      * Download from http://dlsec.cqp.me/cqp-tuling, extract zip, and run.
+  3. Create configuration file for CoolQ HTTP API in ``app\io.github.richardchien.coolqhttpapi\config``
 
-3. Access http://your_domain.name:9000 in your browser.
+     Filename should be <user_id>.json or <user_id>.ini, depending on your choice.
+     
+     Take .ini for example, the configuration sample can be as follows:
+   
+     .. code:: yaml
+
+       [80000000]                                       # Specify your qq uid
+       serve_data_files = yes                           # Required
+       post_message_format = array                      # Required
+       post_url = http://127.0.0.1:8000                 # Set callback url
+       access_token = ac0f790e1fb74ebcaf45da77a6f9de47  # Access Token
+
+     For detailed information please refer to the `configuration documentation <https://cqhttp.cc/docs/4.3/#/Configuration>`_.
+
+- Access http://your_domain.name:9000 in your browser.
 
    You'll be asked to login into noVNC console and complete the login procedure.
 
 For EH Forwarder Bot
 ---------------------------
 
-1. Create `config.yaml` file for `milkice.qq` slave channel
+1. Create ``config.yaml`` file for ``milkice.qq`` slave channel
 
-   *Configuration file is stored at `<profile directory>/blueset.telegram/config.yaml`.*
+   *Configuration file is stored at* ``<profile directory>/blueset.telegram/config.yaml``.
 
    A sample config file can be as follows:
 
@@ -105,7 +127,7 @@ For EH Forwarder Bot
            air_option:                       # Only valid when is_pro == false
                upload_to_smms: true          # Upload images from efb.master_channel to sm.ms for CoolQ Air doesn't support sending images directly to QQ chats
 
-- Then launch with command `ehforwarderbot`, you are good to go!
+- Then launch with command ``ehforwarderbot``, you are good to go!
 
 Notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
