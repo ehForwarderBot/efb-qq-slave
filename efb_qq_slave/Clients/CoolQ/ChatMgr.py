@@ -96,12 +96,16 @@ class ChatManager:
         if not is_discuss:
             efb_chat.chat_uid = 'group' + '_' + str(chat_uid)
             i = self.channel.QQClient.get_group_info(chat_uid)
-            efb_chat.chat_name = i['group_name'] if 'group_name' not in context else context['group_name']
+            if i is not None:
+                efb_chat.chat_name = i['group_name'] if 'group_name' not in context else context['group_name']
+            else:
+                efb_chat.chat_name = chat_uid
             efb_chat.vendor_specific = {'is_discuss': False}
             # todo Add user to efb_chat.member
         else:
             efb_chat.chat_uid = 'discuss' + '_' + str(chat_uid)
-            efb_chat.chat_name = 'Discuss Group' + '_' + str(chat_uid) # todo Find a way to distinguish from different discuss group
+            efb_chat.chat_name = 'Discuss Group' + '_' + str(chat_uid)
+            # todo Find a way to distinguish from different discuss group
             efb_chat.vendor_specific = {'is_discuss': True}
         return efb_chat
 
@@ -115,4 +119,10 @@ class ChatManager:
         efb_chat.vendor_specific = {'is_anonymous': True,
                                     'anonymous_id': anonymous_data['id']}
         efb_chat.group = self.build_efb_chat_as_group(context)
+        return efb_chat
+
+    def build_efb_chat_as_system_user(self, context):  # System user only!
+        efb_chat = EFBChat(self.channel).system()
+        efb_chat.chat_type = ChatType.System
+        efb_chat.chat_name = context['event_description']
         return efb_chat

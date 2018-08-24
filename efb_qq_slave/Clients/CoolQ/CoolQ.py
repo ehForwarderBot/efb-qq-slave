@@ -81,7 +81,9 @@ class CoolQ(BaseClient):
                     if str(msg_data['qq']) == 'all':
                         group_card = 'all'
                     else:
-                        member_info = self.coolq_api_query('get_group_member_info', group_id=g_id, user_id=msg_data['qq'])
+                        member_info = self.coolq_api_query('get_group_member_info',
+                                                           group_id=g_id,
+                                                           user_id=msg_data['qq'])
                         group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
                     self.logger.debug('Group card: {}'.format(group_card))
                     substitution_begin = len(main_text) + 1
@@ -100,15 +102,20 @@ class CoolQ(BaseClient):
                 efb_msg = messages[i]
                 efb_msg.uid = uid + '_' + str(i)
                 # if qq_uid != '80000000':
-                if 'anonymous' not in context:
+                if 'anonymous' not in context or context['anonymous'] is None:
                     if context['message_type'] == 'group':
-                        g_id = context['group_id']
-                        context['alias'] = self.coolq_api_query('get_group_member_info', group_id=g_id, user_id=qq_uid)[
-                            'card']
-                        # context['alias'] = self.coolq_bot.get_group_member_info(group_id=g_id, user_id=u_id)['card']
+                        if context['sub_type'] == 'notice':
+                            context['event_description'] = "System Notification"
+                            efb_msg.author = self.chat_manager.build_efb_chat_as_system_user(context)
+                        else:
+                            g_id = context['group_id']
+                            context['alias'] = self.coolq_api_query('get_group_member_info',
+                                                                    group_id=g_id,
+                                                                    user_id=qq_uid)['card']
+                            efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
                     if context['message_type'] == 'private':
                         context['alias'] = self.get_friend_remark(qq_uid)
-                    efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
+                        efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
                 else:  # anonymous user in group
                     efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_anonymous_user(context)
 
@@ -128,9 +135,74 @@ class CoolQ(BaseClient):
                 send_message_wrapper(efb_msg)
 
         @self.coolq_bot.on_notice('group_increase')
-        def handle_group_msg(context):
-            self.logger.debug(repr(context))
-            # todo
+        def handle_group_increase_msg(context):
+            context['event_description'] = 'Group Member Increase Event'
+            text = '\u2139 {nickname}({context[user_id]}) joined the group({group_name})'
+
+            original_group = self.get_group_info(context['group_id'], False)
+            group_name = context['group_id']
+            if original_group is not None and 'group_name' in original_group:
+                group_name = original_group['group_name']
+            text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
+                               context=context,
+                               group_name=group_name)
+            if (context['sub_type']) == 'invite':
+                text += ' via invitation'
+            context['message'] = text
+            self.send_efb_group_notice(context)
+
+        @self.coolq_bot.on_notice('group_decrease')
+        def handle_group_decrease_msg(context):
+            context['event_description'] = "Group Member Decrease Event"
+            original_group = self.get_group_info(context['group_id'], False)
+            group_name = context['group_id']
+            if original_group is not None and 'group_name' in original_group:
+                group_name = original_group['group_name']
+            text = ''
+            if context['sub_type'] == 'kick_me':
+                text = '\u26A0' + " You've been kicked from the group" \
+                       + '({})'.format(group_name)
+            else:
+                quit_msg = 'quited the group' if context['sub_type'] == 'leave' else 'was kicked from the group'
+                text = '\u2139 {nickname}({context[user_id]}) {quit_msg}({group_name})'
+                text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
+                                   context=context,
+                                   quit_msg=quit_msg,
+                                   group_name=group_name)
+            context['message'] = text
+            self.send_efb_group_notice(context)
+
+        @self.coolq_bot.on_notice('group_upload')
+        def handle_group_file_upload_msg(context):
+            context['event_description'] = "Group File Upload Event"
+
+            original_group = self.get_group_info(context['group_id'], False)
+            group_name = context['group_id']
+            if original_group is not None and 'group_name' in original_group:
+                group_name = original_group['group_name']
+
+            file_info_msg = 'File ID: {file[id]} Filename: {file[name]} File size: {file[size]}'.format(
+                file=context['file'])
+            member_info = self.coolq_api_query('get_group_member_info',
+                                               group_id=context['group_id'],
+                                               user_id=context['user_id'])
+            group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
+            text = '\u2139 {member_card}({context[user_id]}) uploaded a file to group({group_name})\n'
+            text = text.format(member_card=group_card,
+                               context=context,
+                               group_name=group_name) + file_info_msg
+            context['message'] = text
+            self.send_efb_group_notice(context)
+
+        @self.coolq_bot.on_notice('friend_add')
+        def handle_friend_add_msg(context):
+            context['event_description'] = 'New Friend Event'
+            context['uid_prefix'] = 'friend_add'
+            text = '\u2139 {nickname}({context[user_id]}) has become your friend!'
+            text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
+                               context=context)
+            context['message'] = text
+            self.send_msg_to_master(context)
 
         @self.coolq_bot.on_request('group', 'friend')
         def handle_request(context):
@@ -285,8 +357,10 @@ class CoolQ(BaseClient):
         return res
         pass
 
-    def get_group_info(self, group_id):
-        res = self.coolq_api_query('get_group_list')
+    def get_group_info(self, group_id, no_cache=True):
+        if no_cache or not self.group_list:
+            self.group_list = self.coolq_api_query('get_group_list')
+        res = self.group_list
         # res = self.coolq_bot.get_group_list()
         for i in range(len(res)):
             if res[i]['group_id'] == group_id:
@@ -299,7 +373,7 @@ class CoolQ(BaseClient):
         # res = self.coolq_bot.send_msg(message_type=msg_type, **{keyword + '_id': uid}, message=message)
         return str(uuid.uuid4()) + '_' + str(res['message_id'])
 
-    def coolq_api_wrapper(self, func_name, **kwargs):
+    def _coolq_api_wrapper(self, func_name, **kwargs):
         try:
             func = getattr(self.coolq_bot, func_name)
             res = func(**kwargs)
@@ -312,7 +386,7 @@ class CoolQ(BaseClient):
             return res
 
     def check_running_status(self):
-        res = self.coolq_api_wrapper('get_status')
+        res = self._coolq_api_wrapper('get_status')
         if res['good'] or res['online']:
             return True
         else:
@@ -321,10 +395,10 @@ class CoolQ(BaseClient):
     def coolq_api_query(self, func_name, **kwargs):
         """ # Do not call get_status too frequently
         if self.check_running_status():
-            return self.coolq_api_wrapper(func_name, **kwargs)
+            return self._coolq_api_wrapper(func_name, **kwargs)
         """
         if self.is_logged_in and self.is_connected:
-            return self.coolq_api_wrapper(func_name, **kwargs)
+            return self._coolq_api_wrapper(func_name, **kwargs)
         else:
             self.deliver_alert_to_master('Your status is offline.\n'
                                          'You may try login with /login')
@@ -364,16 +438,8 @@ class CoolQ(BaseClient):
             threading.Timer(interval, self.check_status_periodically, [t_event]).start()
 
     def deliver_alert_to_master(self, message: str):
-        msg = EFBMsg()
-        chat = EFBChat(self.channel).system()
-        chat.chat_type = ChatType.System
-        chat.chat_name = "CoolQ Alert"
-        msg.chat = msg.author = chat
-        msg.deliver_to = coordinator.master
-        msg.type = MsgType.Text
-        msg.uid = "__alert__.%s" % int(time.time())
-        msg.text = message
-        coordinator.send_message(msg)
+        context = {'message': message, 'uid_prefix': 'alert', 'event_description': 'CoolQ Alert'}
+        self.send_msg_to_master(context)
 
     def update_friend_list(self):
         # Warning: Experimental API
@@ -408,3 +474,35 @@ class CoolQ(BaseClient):
                 else:
                     return current_user['remark']
         return None
+
+    def send_efb_group_notice(self, context):
+        context['message_type'] = 'group'
+        self.logger.debug(repr(context))
+        msg = EFBMsg()
+        msg.author = self.chat_manager.build_efb_chat_as_system_user(context)
+        msg.chat = self.chat_manager.build_efb_chat_as_group(context)
+        msg.deliver_to = coordinator.master
+        msg.type = MsgType.Text
+        msg.uid = "__group_notice__.%s" % int(time.time())
+        msg.text = context['message']
+        coordinator.send_message(msg)
+
+    def send_msg_to_master(self, context):
+        self.logger.debug(repr(context))
+        msg = EFBMsg()
+        msg.chat = msg.author = self.chat_manager.build_efb_chat_as_system_user(context)
+        msg.deliver_to = coordinator.master
+        msg.type = MsgType.Text
+        msg.uid = "__{context[uid_prefix]}__.{uni_id}".format(context=context,
+                                                              uni_id=str(int(time.time())))
+        msg.text = context['message']
+        coordinator.send_message(msg)
+
+    # As the old saying goes
+    # A programmer spent 20% of time on coding
+    # while the rest 80% on considering a variable/function/class name
+    # todo Deprecated
+    def get_external_group_info(self, group_id):  # Special thanks to @lwl12 for thinking of this name
+        res = self.coolq_api_query('_get_group_info',
+                                   group_id=group_id)
+        return res
