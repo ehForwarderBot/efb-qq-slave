@@ -71,7 +71,7 @@ class QQMessengerChannel(EFBChannel):
         return self.QQClient.send_message(msg)
 
     def send_status(self, status: 'EFBStatus'):
-        # todo
+        return self.QQClient.send_status(status)
         pass
 
     def get_chat_picture(self, chat: 'EFBChat'):

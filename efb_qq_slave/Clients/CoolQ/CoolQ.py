@@ -11,8 +11,9 @@ from typing import Any, Dict, Callable
 
 import cqhttp
 from PIL import Image
-from ehforwarderbot import EFBMsg, MsgType, EFBChat, EFBChannel, coordinator, ChatType
+from ehforwarderbot import EFBMsg, MsgType, EFBChat, EFBChannel, coordinator, ChatType, EFBStatus
 from ehforwarderbot.exceptions import EFBException, EFBMessageError, EFBChatNotFound, EFBOperationNotSupported
+from ehforwarderbot.status import EFBMessageRemoval
 from requests import RequestException
 
 from ... import QQMessengerChannel
@@ -96,11 +97,12 @@ class CoolQ(BaseClient):
             if main_text != "":
                 messages.append(self.msg_decorator.qq_text_simple_wrapper(main_text, at_list))
             uid: str = str(uuid.uuid4())
+            coolq_msg_id = context['message_id']
             for i in range(len(messages)):
                 if not isinstance(messages[i], EFBMsg):
                     continue
                 efb_msg = messages[i]
-                efb_msg.uid = uid + '_' + str(i)
+                efb_msg.uid = uid + '_' + str(coolq_msg_id) + '_' + str(i)
                 # if qq_uid != '80000000':
                 if 'anonymous' not in context or context['anonymous'] is None:
                     if context['message_type'] == 'group':
@@ -296,6 +298,17 @@ class CoolQ(BaseClient):
         """
         m = QQMsgProcessor(instance=self)
         chat_type = msg.chat.chat_uid.split('_')
+
+        self.logger.debug('[%s] Is edited: %s', msg.uid, msg.edit)
+        if msg.edit:
+            if self.client_config['is_pro']:
+                try:
+                    uid_type = msg.uid.split('_')
+                    self.recall_message(uid_type[1])
+                except EFBOperationNotSupported:
+                    raise EFBOperationNotSupported("Failed to recall the message!\n"
+                                                   "This message may have already expired.")
+
         if msg.type in [MsgType.Text, MsgType.Link]:
             if isinstance(msg.target, EFBMsg):
                 max_length = -1  # todo
@@ -309,7 +322,7 @@ class CoolQ(BaseClient):
                 msg.text = "%s%s\n\n%s" % (tgt_alias, tgt_text, coolq_text_encode(msg.text))
             msg.uid = self.coolq_send_message(chat_type[0], chat_type[1], msg.text)
             self.logger.debug('[%s] Sent as a text message. %s', msg.uid, msg.text)
-        elif msg.type in (MsgType.Image, MsgType.Sticker):  # todo Send text if the picture msg does contain text
+        elif msg.type in (MsgType.Image, MsgType.Sticker):
             self.logger.info("[%s] Image/Sticker %s", msg.uid, msg.type)
             text = ''
             if not self.client_config['is_pro']:  # CoolQ Air
@@ -506,3 +519,21 @@ class CoolQ(BaseClient):
         res = self.coolq_api_query('_get_group_info',
                                    group_id=group_id)
         return res
+
+    def send_status(self, status: 'EFBStatus'):
+        if isinstance(status, EFBMessageRemoval):
+            if not status.message.author.is_self:
+                raise EFBMessageError('You can only recall your own messages.')
+            try:
+                uid_type = status.message.uid.split('_')
+                self.recall_message(uid_type[1])
+            except EFBOperationNotSupported:
+                raise EFBMessageError(
+                    'Failed to recall the message. This message may have already expired..')
+        else:
+            raise EFBOperationNotSupported()
+        # todo
+
+    def recall_message(self, message_id):
+        self.coolq_api_query('delete_msg',
+                             message_id=message_id)

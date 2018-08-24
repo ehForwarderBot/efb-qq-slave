@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from ehforwarderbot import EFBMsg
+from ehforwarderbot import EFBMsg, EFBStatus
 
 
 class BaseClient(ABC):
@@ -30,6 +30,10 @@ class BaseClient(ABC):
 
     @abstractmethod
     def send_message(self, msg: EFBMsg):
+        raise NotImplementedError
+
+    @abstractmethod
+    def send_status(self, status: 'EFBStatus'):
         raise NotImplementedError
 
     @abstractmethod
