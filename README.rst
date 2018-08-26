@@ -2,6 +2,9 @@
 EFB QQ Slave Channel
 ####################################
 
+.. figure:: https://i.imgur.com/KHhlL6c.png
+   :alt: This project proudly supports #SayNoToQQ campaign.
+
 **Channel ID**: ``milkice.qq``
 
 This project is under heavy development and can't be used in production environment.
