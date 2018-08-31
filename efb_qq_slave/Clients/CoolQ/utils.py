@@ -205,7 +205,7 @@ def upload_image_smms(file, path):  # Upload image to sm.ms and return the link
         status = json.loads(resp.text)
         if status['code'] == 'success':
             logging.getLogger(__name__).debug('INFO: upload success! url at {}'.format(status['data']['url']))
-            return status
+            return status['data']
         else:
             logging.getLogger(__name__).warning('WARNING: {}'.format(status['msg']))
             raise EFBMessageError
