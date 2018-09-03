@@ -14,6 +14,7 @@ from PIL import Image
 from ehforwarderbot import EFBMsg, MsgType, EFBChat, EFBChannel, coordinator, ChatType, EFBStatus
 from ehforwarderbot.exceptions import EFBException, EFBMessageError, EFBChatNotFound, EFBOperationNotSupported
 from ehforwarderbot.status import EFBMessageRemoval
+from ehforwarderbot.utils import extra
 from requests import RequestException
 
 from ... import QQMessengerChannel
@@ -229,8 +230,12 @@ class CoolQ(BaseClient):
     def logout(self):
         raise NotImplementedError
 
+    @extra(name="Login",
+           desc="Force efb-qq-slave to check status from CoolQ Client.\n"
+                "Usage: {function_name}")
     def login(self):
-        return self.check_status_periodically(None)
+        self.check_status_periodically(None)
+        return 'Done'
 
     def get_stranger_info(self, user_id):
         return self.coolq_api_query('get_stranger_info', user_id=user_id, no_cache=False)
@@ -257,9 +262,14 @@ class CoolQ(BaseClient):
             groups.append(efb_chat)
         return groups + self.discuss_list
 
-    def get_friends(self):
+    def get_friends(self) -> Dict:
         # Warning: Experimental API
-        self.update_friend_list()  # Force update friend list
+        try:
+            self.update_friend_list()  # Force update friend list
+        except EFBOperationNotSupported:
+            self.deliver_alert_to_master('Failed to retrieve the friend list.\n'
+                                         'Only groups are shown.')
+            return {}
         res = self.friend_list
         # res = self.coolq_bot._get_friend_list()
         users = []
@@ -279,7 +289,6 @@ class CoolQ(BaseClient):
                 efb_chat = self.chat_manager.build_efb_chat_as_user(context, True)
                 users.append(efb_chat)
         return users
-        pass
 
     def receive_message(self):
         # Replaced by handle_msg()
@@ -394,6 +403,13 @@ class CoolQ(BaseClient):
         except RequestException as e:
             raise EFBOperationNotSupported('Unable to connect to CoolQ Client! Error Message:\n{}'.format(repr(e)))
         except cqhttp.Error as ex:
+            if ex.status_code == 200 and ex.retcode == 104:  # Cookie expired
+                self.deliver_alert_to_master('Your cookie of CoolQ Client seems to be expired.'
+                                             'Although it will not affect the normal functioning of sending/receiving '
+                                             'messages, however, you may encounter issues like failing to retrieve'
+                                             'friend list. Please consult '
+                                             'https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired'
+                                             '-cookies-of-CoolQ for solutions.')
             raise EFBOperationNotSupported('CoolQ HTTP API encountered an error!\n'
                                            'Status Code:{} Return Code:{}'.format(ex.status_code, ex.retcode))
         else:
@@ -415,7 +431,7 @@ class CoolQ(BaseClient):
             return self._coolq_api_wrapper(func_name, **kwargs)
         else:
             self.deliver_alert_to_master('Your status is offline.\n'
-                                         'You may try login with /login')
+                                         'You may try login with /0_login')
 
     def check_status_periodically(self, t_event):
         self.logger.debug('Start checking status...')
