@@ -7,7 +7,8 @@ from urllib.error import URLError, HTTPError, ContentTooShortError
 
 import requests
 from ehforwarderbot import EFBMsg, coordinator
-from ehforwarderbot.exceptions import EFBMessageError
+
+from .Exceptions import CoolQUnknownException
 
 qq_emoji_list = {  # created by JogleLew, optimizations are welcome
     0: u'\U0001F62E',
@@ -208,4 +209,4 @@ def upload_image_smms(file, path):  # Upload image to sm.ms and return the link
             return status['data']
         else:
             logging.getLogger(__name__).warning('WARNING: {}'.format(status['msg']))
-            raise EFBMessageError
+            raise CoolQUnknownException(status['msg'])

@@ -12,7 +12,7 @@ from ehforwarderbot import EFBMsg, MsgType, EFBChat, coordinator
 from ehforwarderbot.message import EFBMsgLocationAttribute, EFBMsgCommands, EFBMsgCommand, EFBMsgSubstitutions, \
     EFBMsgLinkAttribute
 
-from .utils import cq_get_image, coolq_para_encode
+from .Utils import cq_get_image, coolq_para_encode
 from . import CoolQ
 
 

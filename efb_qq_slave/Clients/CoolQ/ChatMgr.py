@@ -1,11 +1,9 @@
 # coding: utf-8
 
 import logging
-from typing import Optional, List, TYPE_CHECKING
 
 from ehforwarderbot import EFBChat
 from ehforwarderbot.constants import ChatType
-from ehforwarderbot.exceptions import EFBChatNotFound
 
 from efb_qq_slave import QQMessengerChannel
 

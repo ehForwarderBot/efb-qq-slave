@@ -1,29 +1,28 @@
 # coding: utf-8
-import html
-import json
 import logging
 import tempfile
 import threading
 import time
 import uuid
-
-from typing import Any, Dict, Callable, List
+from typing import Any, Dict, List
 
 import cqhttp
 from PIL import Image
-from ehforwarderbot import EFBMsg, MsgType, EFBChat, EFBChannel, coordinator, ChatType, EFBStatus
-from ehforwarderbot.exceptions import EFBException, EFBMessageError, EFBChatNotFound, EFBOperationNotSupported
+from cqhttp import CQHttp
+from ehforwarderbot import EFBMsg, MsgType, EFBChat, coordinator, EFBStatus
+from ehforwarderbot.exceptions import EFBMessageError, EFBOperationNotSupported
 from ehforwarderbot.status import EFBMessageRemoval
 from ehforwarderbot.utils import extra
 from requests import RequestException
 
-from ... import QQMessengerChannel
 from .ChatMgr import ChatManager
-from .utils import qq_emoji_list, async_send_messages_to_master, process_quote_text, coolq_text_encode, \
+from .Exceptions import CoolQDisconnectedException, CoolQAPIFailureException, CoolQOfflineException, \
+    CoolQUnknownException
+from .MsgDecorator import QQMsgProcessor
+from .Utils import qq_emoji_list, async_send_messages_to_master, process_quote_text, coolq_text_encode, \
     upload_image_smms
 from ..BaseClient import BaseClient
-from cqhttp import CQHttp
-from .MsgDecorator import QQMsgProcessor
+from ... import QQMessengerChannel
 
 
 class CoolQ(BaseClient):
@@ -267,7 +266,7 @@ class CoolQ(BaseClient):
         # Warning: Experimental API
         try:
             self.update_friend_list()  # Force update friend list
-        except EFBOperationNotSupported:
+        except CoolQAPIFailureException:
             self.deliver_alert_to_master('Failed to retrieve the friend list.\n'
                                          'Only groups are shown.')
             return []
@@ -316,7 +315,7 @@ class CoolQ(BaseClient):
                 try:
                     uid_type = msg.uid.split('_')
                     self.recall_message(uid_type[1])
-                except EFBOperationNotSupported:
+                except CoolQAPIFailureException:
                     raise EFBOperationNotSupported("Failed to recall the message!\n"
                                                    "This message may have already expired.")
 
@@ -338,7 +337,17 @@ class CoolQ(BaseClient):
             text = ''
             if not self.client_config['is_pro']:  # CoolQ Air
                 if self.client_config['air_option']['upload_to_smms']:
-                    text = '[Image] {}'.format(upload_image_smms(msg.file, msg.path)['url'])
+                    text = '[Image] {}'
+                    smms_data = None
+                    try:
+                        smms_data = upload_image_smms(msg.file, msg.path)
+                    except CoolQUnknownException as e:
+                        text = '[Image]'
+                        self.deliver_alert_to_master('Failed to upload the image to sm.ms! Return Msg: '
+                                                     + getattr(e, 'message', repr(e)))
+                    else:
+                        if smms_data is not None:
+                            text.format(smms_data['url'])
                 else:
                     text = '[Image]'
             else:
@@ -402,7 +411,7 @@ class CoolQ(BaseClient):
             func = getattr(self.coolq_bot, func_name)
             res = func(**kwargs)
         except RequestException as e:
-            raise EFBOperationNotSupported('Unable to connect to CoolQ Client! Error Message:\n{}'.format(repr(e)))
+            raise CoolQDisconnectedException('Unable to connect to CoolQ Client! Error Message:\n{}'.format(repr(e)))
         except cqhttp.Error as ex:
             if ex.status_code == 200 and ex.retcode == 104:  # Cookie expired
                 self.deliver_alert_to_master('Your cookie of CoolQ Client seems to be expired. '
@@ -411,7 +420,7 @@ class CoolQ(BaseClient):
                                              'friend list. Please consult '
                                              'https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired'
                                              '-cookies-of-CoolQ for solutions.')
-            raise EFBOperationNotSupported('CoolQ HTTP API encountered an error!\n'
+            raise CoolQAPIFailureException('CoolQ HTTP API encountered an error!\n'
                                            'Status Code:{} Return Code:{}'.format(ex.status_code, ex.retcode))
         else:
             return res
@@ -421,7 +430,7 @@ class CoolQ(BaseClient):
         if res['good'] or res['online']:
             return True
         else:
-            raise EFBMessageError("CoolQ Client isn't working correctly!")
+            raise CoolQOfflineException("CoolQ Client isn't working correctly!")
 
     def coolq_api_query(self, func_name, **kwargs):
         """ # Do not call get_status too frequently
@@ -441,7 +450,7 @@ class CoolQ(BaseClient):
         interval = 300
         try:
             flag = self.check_running_status()
-        except EFBOperationNotSupported as e:
+        except CoolQDisconnectedException as e:
             if self.repeat_counter < 3:
                 self.deliver_alert_to_master("We're unable to communicate with CoolQ Client.\n"
                                              "Please check the connection and credentials provided.\n"
@@ -450,7 +459,7 @@ class CoolQ(BaseClient):
             self.is_connected = False
             self.is_logged_in = False
             interval = 3600
-        except EFBMessageError:
+        except (CoolQOfflineException, CoolQAPIFailureException):
             if self.repeat_counter < 3:
                 self.deliver_alert_to_master('CoolQ is running in abnormal status.\n'
                                              'You may need to relogin your account or have a check in CoolQ Client.\n')
@@ -553,7 +562,7 @@ class CoolQ(BaseClient):
             try:
                 uid_type = status.message.uid.split('_')
                 self.recall_message(uid_type[1])
-            except EFBOperationNotSupported:
+            except CoolQAPIFailureException:
                 raise EFBMessageError(
                     'Failed to recall the message. This message may have already expired..')
         else:
