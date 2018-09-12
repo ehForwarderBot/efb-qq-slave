@@ -233,7 +233,7 @@ class CoolQ(BaseClient):
     @extra(name="Check CoolQ Status",
            desc="Force efb-qq-slave to refresh status from CoolQ Client.\n"
                 "Usage: {function_name}")
-    def login(self):
+    def login(self, param: str = ""):
         self.check_status_periodically(None)
         return 'Done'
 
@@ -404,9 +404,9 @@ class CoolQ(BaseClient):
             raise EFBOperationNotSupported('Unable to connect to CoolQ Client! Error Message:\n{}'.format(repr(e)))
         except cqhttp.Error as ex:
             if ex.status_code == 200 and ex.retcode == 104:  # Cookie expired
-                self.deliver_alert_to_master('Your cookie of CoolQ Client seems to be expired.'
+                self.deliver_alert_to_master('Your cookie of CoolQ Client seems to be expired. '
                                              'Although it will not affect the normal functioning of sending/receiving '
-                                             'messages, however, you may encounter issues like failing to retrieve'
+                                             'messages, however, you may encounter issues like failing to retrieve '
                                              'friend list. Please consult '
                                              'https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired'
                                              '-cookies-of-CoolQ for solutions.')
@@ -481,7 +481,7 @@ class CoolQ(BaseClient):
         self.logger.debug('Update group list completed. Entries: %s', len(self.group_list))
 
     def update_contacts_periodically(self, t_event):
-        self.logger.debug('Start updating friend&group list')
+        self.logger.debug('Start updating friend & group list')
         interval = 1800
         if self.is_connected and self.is_logged_in:
             self.update_friend_list()
