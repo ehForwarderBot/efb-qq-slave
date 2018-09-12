@@ -269,7 +269,7 @@ class CoolQ(BaseClient):
         except EFBOperationNotSupported:
             self.deliver_alert_to_master('Failed to retrieve the friend list.\n'
                                          'Only groups are shown.')
-            return {}
+            return []
         res = self.friend_list
         # res = self.coolq_bot._get_friend_list()
         users = []
