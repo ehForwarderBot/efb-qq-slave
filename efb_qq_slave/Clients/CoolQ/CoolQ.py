@@ -38,6 +38,7 @@ class CoolQ(BaseClient):
     group_list = []
     discuss_list = []
     repeat_counter = 0
+    update_repeat_counter = 0
 
     def __init__(self, client_id: str, config: Dict[str, Any], channel):
         super().__init__(client_id, config)
@@ -413,15 +414,12 @@ class CoolQ(BaseClient):
         except RequestException as e:
             raise CoolQDisconnectedException('Unable to connect to CoolQ Client! Error Message:\n{}'.format(repr(e)))
         except cqhttp.Error as ex:
-            if ex.status_code == 200 and ex.retcode == 104:  # Cookie expired
-                self.deliver_alert_to_master('Your cookie of CoolQ Client seems to be expired. '
-                                             'Although it will not affect the normal functioning of sending/receiving '
-                                             'messages, however, you may encounter issues like failing to retrieve '
-                                             'friend list. Please consult '
-                                             'https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired'
-                                             '-cookies-of-CoolQ for solutions.')
-            raise CoolQAPIFailureException('CoolQ HTTP API encountered an error!\n'
-                                           'Status Code:{} Return Code:{}'.format(ex.status_code, ex.retcode))
+            api_ex = CoolQAPIFailureException('CoolQ HTTP API encountered an error!\n'
+                                              'Status Code:{} Return Code:{}'.format(ex.status_code, ex.retcode))
+            # if ex.status_code == 200 and ex.retcode == 104:  # Cookie expired
+            setattr(api_ex, 'status_code', ex.status_code)
+            setattr(api_ex, 'retcode', ex.retcode)
+            raise api_ex
         else:
             return res
 
@@ -502,15 +500,28 @@ class CoolQ(BaseClient):
         self.logger.debug('Start updating friend & group list')
         interval = 1800
         if self.is_connected and self.is_logged_in:
-            self.update_friend_list()
-            self.update_group_list()
+            try:
+                self.update_friend_list()
+                self.update_group_list()
+            except CoolQAPIFailureException as ex:
+                if getattr(ex, 'status_code') == 200 and getattr(ex, 'retcode') == 104 and self.update_repeat_counter < 3:
+                    self.send_cookie_expired_alarm()
+                if self.update_repeat_counter < 3:
+                    self.deliver_alert_to_master('Errors occurred when updating contacts: ' + getattr(ex, 'message'))
+                    self.update_repeat_counter += 1
+            else:
+                self.update_repeat_counter = 0
         self.logger.debug('Update completed')
         if t_event is not None and not t_event.is_set():
             threading.Timer(interval, self.update_contacts_periodically, [t_event]).start()
 
     def get_friend_remark(self, uid):
         if not self.friend_list:
-            self.update_friend_list()
+            try:
+                self.update_friend_list()
+            except CoolQAPIFailureException:
+                self.deliver_alert_to_master('Failed to obtain friend remark name')
+                return ''
         for i in range(len(self.friend_list)):  # friend group
             for j in range(len(self.friend_list[i]['friends'])):
                 current_user = self.friend_list[i]['friends'][j]
@@ -521,7 +532,7 @@ class CoolQ(BaseClient):
                     return current_user['nickname']
                 else:
                     return current_user['remark']
-        return None
+        return ''
 
     def send_efb_group_notice(self, context):
         context['message_type'] = 'group'
@@ -572,3 +583,11 @@ class CoolQ(BaseClient):
     def recall_message(self, message_id):
         self.coolq_api_query('delete_msg',
                              message_id=message_id)
+
+    def send_cookie_expired_alarm(self):
+        self.deliver_alert_to_master('Your cookie of CoolQ Client seems to be expired. '
+                                     'Although it will not affect the normal functioning of sending/receiving '
+                                     'messages, however, you may encounter issues like failing to retrieve '
+                                     'friend list. Please consult '
+                                     'https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired'
+                                     '-cookies-of-CoolQ for solutions.')
