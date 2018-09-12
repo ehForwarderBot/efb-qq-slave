@@ -230,8 +230,8 @@ class CoolQ(BaseClient):
     def logout(self):
         raise NotImplementedError
 
-    @extra(name="Login",
-           desc="Force efb-qq-slave to check status from CoolQ Client.\n"
+    @extra(name="Check CoolQ Status",
+           desc="Force efb-qq-slave to refresh status from CoolQ Client.\n"
                 "Usage: {function_name}")
     def login(self):
         self.check_status_periodically(None)
