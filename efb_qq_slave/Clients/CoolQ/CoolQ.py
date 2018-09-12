@@ -35,9 +35,10 @@ class CoolQ(BaseClient):
     logger: logging.Logger = logging.getLogger(__name__)
     channel: QQMessengerChannel
 
-    friend_list = {}
-    group_list = {}
+    friend_list = []
+    group_list = []
     discuss_list = []
+    repeat_counter = 0
 
     def __init__(self, client_id: str, config: Dict[str, Any], channel):
         super().__init__(client_id, config)
@@ -429,9 +430,10 @@ class CoolQ(BaseClient):
         """
         if self.is_logged_in and self.is_connected:
             return self._coolq_api_wrapper(func_name, **kwargs)
-        else:
+        elif self.repeat_counter < 3:
             self.deliver_alert_to_master('Your status is offline.\n'
                                          'You may try login with /0_login')
+            self.repeat_counter += 1
 
     def check_status_periodically(self, t_event):
         self.logger.debug('Start checking status...')
@@ -440,22 +442,28 @@ class CoolQ(BaseClient):
         try:
             flag = self.check_running_status()
         except EFBOperationNotSupported as e:
-            self.deliver_alert_to_master("We're unable to communicate with CoolQ Client.\n"
-                                         "Please check the connection and credentials provided.\n"
-                                         "{}".format(repr(e)))
+            if self.repeat_counter < 3:
+                self.deliver_alert_to_master("We're unable to communicate with CoolQ Client.\n"
+                                             "Please check the connection and credentials provided.\n"
+                                             "{}".format(repr(e)))
+                self.repeat_counter += 1
             self.is_connected = False
             self.is_logged_in = False
             interval = 3600
         except EFBMessageError:
-            self.deliver_alert_to_master('CoolQ is running in abnormal status.\n'
-                                         'You may need to relogin your account or have a check in CoolQ Client.\n')
+            if self.repeat_counter < 3:
+                self.deliver_alert_to_master('CoolQ is running in abnormal status.\n'
+                                             'You may need to relogin your account or have a check in CoolQ Client.\n')
+                self.repeat_counter += 1
             self.is_connected = True
             self.is_logged_in = False
             interval = 3600
         else:
             if not flag:
-                self.deliver_alert_to_master("We don't know why, but status check failed.\n"
-                                             "Please enable debug mode and consult the log for more details.")
+                if self.repeat_counter < 3:
+                    self.deliver_alert_to_master("We don't know why, but status check failed.\n"
+                                                 "Please enable debug mode and consult the log for more details.")
+                    self.repeat_counter += 1
                 self.is_connected = True
                 self.is_logged_in = False
                 interval = 3600
@@ -463,6 +471,7 @@ class CoolQ(BaseClient):
                 self.logger.debug('Status: OK')
                 self.is_connected = True
                 self.is_logged_in = True
+                self.repeat_counter = 0
 
         if t_event is not None and not t_event.is_set():
             threading.Timer(interval, self.check_status_periodically, [t_event]).start()
