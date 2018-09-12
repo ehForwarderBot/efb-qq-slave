@@ -7,7 +7,7 @@ import threading
 import time
 import uuid
 
-from typing import Any, Dict, Callable
+from typing import Any, Dict, Callable, List
 
 import cqhttp
 from PIL import Image
@@ -249,7 +249,7 @@ class CoolQ(BaseClient):
         else:
             return {'status': 1}
 
-    def get_groups(self):
+    def get_groups(self) -> List:
         # todo Add support for discuss group iteration
         self.update_group_list()  # Force update group list
         res = self.group_list
@@ -262,7 +262,7 @@ class CoolQ(BaseClient):
             groups.append(efb_chat)
         return groups + self.discuss_list
 
-    def get_friends(self) -> Dict:
+    def get_friends(self) -> List:
         # Warning: Experimental API
         try:
             self.update_friend_list()  # Force update friend list
