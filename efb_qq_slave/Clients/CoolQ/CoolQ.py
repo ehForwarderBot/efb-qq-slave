@@ -141,8 +141,8 @@ class CoolQ(BaseClient):
 
         @self.coolq_bot.on_notice('group_increase')
         def handle_group_increase_msg(context):
-            context['event_description'] = 'Group Member Increase Event'
-            text = '\u2139 {nickname}({context[user_id]}) joined the group({group_name})'
+            context['event_description'] = '\u2139 Group Member Increase Event'
+            text = '{nickname}({context[user_id]}) joined the group({group_name})'
 
             original_group = self.get_group_info(context['group_id'], False)
             group_name = context['group_id']
@@ -158,18 +158,18 @@ class CoolQ(BaseClient):
 
         @self.coolq_bot.on_notice('group_decrease')
         def handle_group_decrease_msg(context):
-            context['event_description'] = "Group Member Decrease Event"
+            context['event_description'] = "\u2139 Group Member Decrease Event"
             original_group = self.get_group_info(context['group_id'], False)
             group_name = context['group_id']
             if original_group is not None and 'group_name' in original_group:
                 group_name = original_group['group_name']
             text = ''
             if context['sub_type'] == 'kick_me':
-                text = '\u26A0' + " You've been kicked from the group" \
+                text = "You've been kicked from the group" \
                        + '({})'.format(group_name)
             else:
                 quit_msg = 'quited the group' if context['sub_type'] == 'leave' else 'was kicked from the group'
-                text = '\u2139 {nickname}({context[user_id]}) {quit_msg}({group_name})'
+                text = '{nickname}({context[user_id]}) {quit_msg}({group_name})'
                 text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
                                    context=context,
                                    quit_msg=quit_msg,
@@ -179,7 +179,7 @@ class CoolQ(BaseClient):
 
         @self.coolq_bot.on_notice('group_upload')
         def handle_group_file_upload_msg(context):
-            context['event_description'] = "Group File Upload Event"
+            context['event_description'] = "\u2139 Group File Upload Event"
 
             original_group = self.get_group_info(context['group_id'], False)
             group_name = context['group_id']
@@ -192,7 +192,7 @@ class CoolQ(BaseClient):
                                                group_id=context['group_id'],
                                                user_id=context['user_id'])
             group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
-            text = '\u2139 {member_card}({context[user_id]}) uploaded a file to group({group_name})\n'
+            text = '{member_card}({context[user_id]}) uploaded a file to group({group_name})\n'
             text = text.format(member_card=group_card,
                                context=context,
                                group_name=group_name) + file_info_msg
@@ -201,9 +201,9 @@ class CoolQ(BaseClient):
 
         @self.coolq_bot.on_notice('friend_add')
         def handle_friend_add_msg(context):
-            context['event_description'] = 'New Friend Event'
+            context['event_description'] = '\u2139 New Friend Event'
             context['uid_prefix'] = 'friend_add'
-            text = '\u2139 {nickname}({context[user_id]}) has become your friend!'
+            text = '{nickname}({context[user_id]}) has become your friend!'
             text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
                                context=context)
             context['message'] = text
