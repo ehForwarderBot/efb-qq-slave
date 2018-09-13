@@ -47,7 +47,7 @@ For CoolQ binary client
   
   3. Access http://<your_domain_name_or_your_ip>:9000 in your browser.
 
-   You'll be asked to login into noVNC console and complete the login procedure.
+     You'll be asked to login into noVNC console and complete the login procedure.
 
 - If you are using Windows -> Directly run CoolQ
   
@@ -86,11 +86,11 @@ For EH Forwarder Bot
 
 1. Create ``config.yaml`` file for ``milkice.qq`` slave channel
 
-  *Configuration file is stored at* ``<profile directory>/blueset.telegram/config.yaml``.
+   *Configuration file is stored at* ``<profile directory>/blueset.telegram/config.yaml``.
 
-  A sample config file can be as follows:
+   A sample config file can be as follows:
 
-  .. code:: yaml
+   .. code:: yaml
 
        Client: CoolQ                         # Defines the client efb-qq-slave should use
        CoolQ:
@@ -103,7 +103,7 @@ For EH Forwarder Bot
            air_option:                       # Only valid when is_pro == false
                upload_to_smms: true          # Upload images from efb.master_channel to sm.ms for CoolQ Air doesn't support sending images directly to QQ chats
 
-- Then launch with command ``ehforwarderbot``, you are good to go!
+2. Then launch with command ``ehforwarderbot``, you are good to go!
 
 FAQ:
 ---------------------------

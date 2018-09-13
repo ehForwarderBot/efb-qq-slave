@@ -45,7 +45,7 @@
 
   3. 在浏览器内访问 http://<酷Q VNC监听的ip或者域名>:9000
 
-    请在noVNC终端中输入上述配置选项中的 VNC 密码登录，并使用QQ账户和密码在酷Q中登录QQ账号
+     请在noVNC终端中输入上述配置选项中的 VNC 密码登录，并使用QQ账户和密码在酷Q中登录QQ账号
 
 - 如果您正在运行 Windows -> 请直接运行 CoolQ
 
@@ -83,14 +83,12 @@
 ---------------------------
 
 1. 为 ``milkice.qq`` 从端创建 ``config.yaml`` 配置文件
-
-  __(EFB 2.0.0a1 中，默认的配置文件夹位于 ~/.ehforwarderbot/profiles/default )__
   
-  *配置文件通常位于* ``~/.ehforwarderbot/profiles/default/blueset.telegram/config.yaml``.
+   *配置文件通常位于* ``~/.ehforwarderbot/profiles/default/blueset.telegram/config.yaml``.
 
-  样例配置文件如下:
+   样例配置文件如下:
 
-  .. code:: yaml
+   .. code:: yaml
 
        Client: CoolQ                         # 指定要使用的 QQ 客户端（此处为CoolQ）
        CoolQ:
@@ -103,9 +101,10 @@
            air_option:                       # 包含于 air_option 的配置选项仅当 is_pro 为 false 时才有效
                upload_to_smms: true          # 将来自 EFB主端(通常是Telegram) 的图片上传到 sm.ms 服务器并以链接的形式发送到 QQ 端
 
-- 控制台启动 ``ehforwarderbot``, 大功告成!
+2. 控制台启动 ``ehforwarderbot``, 大功告成!
 
-FAQ:
+FAQ
+---------------------------
 
 **以下内容仅针对于 酷Q 客户端有效**
 
@@ -116,8 +115,7 @@ FAQ:
   A - 酷Q官方以语音处理库太大为由并未将语音模块集成入酷Q，而是提供了一个带语音处理版本的酷Q供下载，目前暂时没有动力编写QQ语音消息的处理，如有需求请在 `这个Github Issue <https://github.com/milkice233/efb-qq-slave/issues/1>`_ 中留言或在issue上发送表情，需求量较高将会考虑开发
 
 * Q - 酷Q不同版本区别？
-  A - `https://cqp.cc/t/23290 <https://cqp.cc/t/23290>`_
-      同时请注意酷Q Air 不支持消息撤回
+  A - `https://cqp.cc/t/23290 <https://cqp.cc/t/23290>`_ 同时请注意酷Q Air 不支持消息撤回
 
 * Q - 目前暂未实现的功能？
   A - 好友请求处理，加群请求处理，尚未适配少部分消息类型（例如签到消息），语音发送/接收
