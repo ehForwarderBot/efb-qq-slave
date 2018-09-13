@@ -39,7 +39,7 @@ For CoolQ binary client
 
   - For CoolQ Pro User
 
-    **Please add extra argument (``-e COOLQ_URL="http://dlsec.cqp.me/cqp-tuling"``) to docker run command so that docker will download CoolQ Pro instead of Air**
+    **Please add extra argument** (``-e COOLQ_URL="http://dlsec.cqp.me/cqp-tuling"``) **to docker run command so that docker will download CoolQ Pro instead of Air**
 
 
   *Please read the* `docker documentation <https://cqhttp.cc/docs/4.4/#/Docker>`_ *for more options.*
