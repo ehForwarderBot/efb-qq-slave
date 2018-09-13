@@ -37,9 +37,9 @@
 
   - 酷Q Pro用户请注意
 
-    **请在docker run命令中添加额外参数 (-e COOLQ_URL = "http://dlsec.cqp.me/cqp-tuling")，以便docker下载CoolQ Pro而不是Air**
+    **请在docker run命令中添加额外参数 (``-e COOLQ_URL = "http://dlsec.cqp.me/cqp-tuling"``)，以便docker下载CoolQ Pro而不是Air**
 
-  请注意，为了确保可以从 docker 内访问 ehforwarderbot，建议添加参数 ``--net ="host"`` 如果您遇到网络问题，请尝试删除此参数。
+  请注意，为了确保可以从 docker 内访问 ehforwarderbot，建议添加参数 ``--net ="host"``  。如果您遇到网络问题，请尝试删除此参数。
 
   *请阅读* `docker 文档 <https://cqhttp.cc/docs/4.4/#/Docker>`_ *获悉更多的可配置选项.*
 
@@ -84,7 +84,7 @@
 
 1. 为 ``milkice.qq`` 从端创建 ``config.yaml`` 配置文件
   
-   *配置文件通常位于* ``~/.ehforwarderbot/profiles/default/blueset.telegram/config.yaml``.
+   *配置文件通常位于* ``~/.ehforwarderbot/profiles/default/milkice.qq/config.yaml``.
 
    样例配置文件如下:
 

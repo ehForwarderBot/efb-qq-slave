@@ -39,7 +39,7 @@ For CoolQ binary client
 
   - For CoolQ Pro User
 
-    **Please add extra argument (-e COOLQ_URL="http://dlsec.cqp.me/cqp-tuling") to docker run command so that docker will download CoolQ Pro instead of Air**
+    **Please add extra argument (``-e COOLQ_URL="http://dlsec.cqp.me/cqp-tuling"``) to docker run command so that docker will download CoolQ Pro instead of Air**
 
 
   *Please read the* `docker documentation <https://cqhttp.cc/docs/4.4/#/Docker>`_ *for more options.*
@@ -86,7 +86,7 @@ For EH Forwarder Bot
 
 1. Create ``config.yaml`` file for ``milkice.qq`` slave channel
 
-   *Configuration file is stored at* ``<profile directory>/blueset.telegram/config.yaml``.
+   *Configuration file is stored at* ``<profile directory>/milkice.qq/config.yaml``.
 
    A sample config file can be as follows:
 
@@ -112,11 +112,11 @@ FAQ:
 
 * Q - Why can't I send images to QQ from master channel(Telegram)?
 
-  A - If you are using CoolQ Air, due to technical barriers CoolQ is unable to send images directly to QQ. Please change the ``is_pro`` to true and ``upload_to_smms`` to false in order to send images via links.
+  A - If you are using CoolQ Air, due to technical barriers CoolQ is unable to send images directly to QQ. Please change the ``is_pro`` to false and ``upload_to_smms`` to true in order to send images via links.
 
 * Q - Why can't I send/receive audio？
 
-  A - Currently we have no intention to develop that，please leave feedback on `this Github Issue <https://github.com/milkice233/efb-qq-slave/issues/1>`_ if you are eager for this feature
+  A - Currently we have no intention to develop that, please leave feedback on `this Github Issue <https://github.com/milkice233/efb-qq-slave/issues/1>`_ if you are eager for this feature
 
 * Q - What's the differences between CoolQ Air and Pro?
 
@@ -124,4 +124,4 @@ FAQ:
 
 * Q - What are the features that haven't been implemented？
 
-  A - Friend Request，Group Request，Some kinds of messages(like siganture messages)，receiving/sending audio
+  A - Friend Request, Group Request, Some kinds of messages(like siganture messages), receiving/sending audio
