@@ -23,7 +23,7 @@ Software dependencies
 Installation
 ******************
 
-This project is still in Alpha, use at your own risk。
+This project is still in Alpha, use at your own risk
 
 At this stage, please follow the following steps to install this package and start testing.
 
