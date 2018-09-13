@@ -51,13 +51,13 @@
 
   1. 从CoolQ网站下载CoolQ程序文件
 
-    * 如果您是 CoolQ Lite:
+     * 如果您是 CoolQ Lite:
     
-      * 从 http://dlsec.cqp.me/cqa-tuling 下载，并解压zip
+       * 从 http://dlsec.cqp.me/cqa-tuling 下载，并解压zip
 
-    * 如果您是 CoolQ Pro：
+     * 如果您是 CoolQ Pro：
 
-      * 从 http://dlsec.cqp.me/cqp-tuling 下载，并解压zip
+       * 从 http://dlsec.cqp.me/cqp-tuling 下载，并解压zip
    
   2. 从 `Github Releases <https://github.com/richardchien/coolq-http-api/releases>`_ 下载 酷Q HTTP 插件并将其丢入 ``app/`` 文件夹内
 
