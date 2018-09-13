@@ -23,17 +23,17 @@ For CoolQ binary client
     $ docker pull richardchien/cqhttp:latest
     $ mkdir coolq  # Contains CoolQ binary
     $ docker run -ti --rm --name cqhttp-test --net="host" \
-             -v $(pwd)/coolq:/home/user/coolq \  # mount coolq folder
-             -p 9000:9000 \                      # noVNC port
-             -p 5700:5700 \                      # HTTP API port
-             -e VNC_PASSWD=MAX8char \            # Modify VNC password
-             -e COOLQ_PORT=5700 \                # API Port
-             -e COOLQ_ACCOUNT=123456 \           # Specify qq uid, optional but recommended
-             -e CQHTTP_POST_URL=http://example.com:8000 \  # Event callback url
-             -e CQHTTP_SERVE_DATA_FILES=yes \    # Allow accessing CoolQ data file via HTTP
-             -e CQHTTP_ACCESS_TOKEN=ac0f790e1fb74ebcaf45da77a6f9de47 \ # Access Token
-             -e CQHTTP_POST_MESSAGE_FORMAT=array \ # Use array for posting(Required)
-             richardchien/cqhttp:latest
+         -v $(pwd)/coolq:/home/user/coolq     `# mount coolq folder` \
+         -p 9000:9000                         `# noVNC port` \
+         -p 5700:5700                         `# HTTP API port` \
+         -e VNC_PASSWD=MAX8char               `# Modify VNC password` \
+         -e COOLQ_PORT=5700                   `# API Port` \
+         -e COOLQ_ACCOUNT=123456              `# Specify qq uid, optional but recommended` \
+         -e CQHTTP_POST_URL=http://127.0.0.1:8000   `# Event callback url` \
+         -e CQHTTP_SERVE_DATA_FILES=yes       `# Allow accessing CoolQ data file via HTTP` \
+         -e CQHTTP_ACCESS_TOKEN=ac0f790e1fb74ebcaf45da77a6f9de47  `# Access Token` \
+         -e CQHTTP_POST_MESSAGE_FORMAT=array  `# Use array for posting(Required)` \
+         richardchien/cqhttp:latest
 
   Please note that in order to ensure that ehforwarderbot is accessible from docker inside, it's recommended to have the argument ``--net="host"`` enabled. If you encounter network issues please try removing this parameter.
 

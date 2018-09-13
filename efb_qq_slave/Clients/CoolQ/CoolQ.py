@@ -348,7 +348,7 @@ class CoolQ(BaseClient):
                                                      + getattr(e, 'message', repr(e)))
                     else:
                         if smms_data is not None:
-                            text.format(smms_data['url'])
+                            text = text.format(smms_data['url'])
                 else:
                     text = '[Image]'
             else:

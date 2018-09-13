@@ -23,17 +23,17 @@
     $ docker pull richardchien/cqhttp:latest
     $ mkdir coolq  # 包含CoolQ程序文件
     $ docker run -ti --rm --name cqhttp-test --net="host" \
-             -v $(pwd)/coolq:/home/user/coolq \  
-             -p 9000:9000 \                      # 网页noVNC端口
-             -p 5700:5700 \                      # 酷Q对外提供的API接口的端口
-             -e VNC_PASSWD=MAX8char \            # 请修改 VNC 密码！！！！
-             -e COOLQ_PORT=5700 \                # 酷Q对外提供的API接口的端口
-             -e COOLQ_ACCOUNT=123456 \           # 在此输入要登录的QQ号，虽然可选但是建议填入
-             -e CQHTTP_POST_URL=http://example.com:8000 \  # efb-qq-slave监听的端口/地址 用于接受传入的消息
-             -e CQHTTP_SERVE_DATA_FILES=yes \    # 允许以HTTP方式访问酷Q数据文件
-             -e CQHTTP_ACCESS_TOKEN=ac0f790e1fb74ebcaf45da77a6f9de47 \ # Access Token
-             -e CQHTTP_POST_MESSAGE_FORMAT=array \ # 回传消息时使用数组（必选）
-             richardchien/cqhttp:latest
+         -v $(pwd)/coolq:/home/user/coolq     `# mount coolq folder` \
+         -p 9000:9000                         `# 网页noVNC端口` \
+         -p 5700:5700                         `# 酷Q对外提供的API接口的端口` \
+         -e VNC_PASSWD=MAX8char               `# 请修改 VNC 密码！！！！` \
+         -e COOLQ_PORT=5700                   `# 酷Q对外提供的API接口的端口` \
+         -e COOLQ_ACCOUNT=123456              `# 在此输入要登录的QQ号，虽然可选但是建议填入` \
+         -e CQHTTP_POST_URL=http://127.0.0.1:8000   `# efb-qq-slave监听的端口/地址 用于接受传入的消息` \
+         -e CQHTTP_SERVE_DATA_FILES=yes       `# 允许以HTTP方式访问酷Q数据文件` \
+         -e CQHTTP_ACCESS_TOKEN=ac0f790e1fb74ebcaf45da77a6f9de47  `# Access Token` \
+         -e CQHTTP_POST_MESSAGE_FORMAT=array  `# 回传消息时使用数组（必选）` \
+         richardchien/cqhttp:latest
 
   - 酷Q Pro用户请注意
 
