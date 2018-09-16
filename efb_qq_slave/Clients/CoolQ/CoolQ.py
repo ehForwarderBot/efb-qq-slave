@@ -253,7 +253,7 @@ class CoolQ(BaseClient):
                     param_dict['clean_event'] = 'true'
                 else:
                     return "Unknown parameter: {}.".format(param)
-        self.logger.msg(repr(param_dict))
+        self.logger.debug(repr(param_dict))
         self.coolq_api_query('set_restart', **param_dict)
         return 'Done. Please wait for a while.'
 
