@@ -89,9 +89,16 @@ class CoolQ(BaseClient):
                                                            user_id=msg_data['qq'])
                         group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
                     self.logger.debug('Group card: {}'.format(group_card))
-                    substitution_begin = len(main_text) + 1
-                    substitution_end = len(main_text) + len(group_card) + 2
-                    main_text += ' @{} '.format(group_card)
+                    substitution_begin = 0
+                    substitution_end = 0
+                    if main_text == '':
+                        substitution_begin = len(main_text)
+                        substitution_end = len(main_text) + len(group_card) + 1
+                        main_text += '@{} '.format(group_card)
+                    else:
+                        substitution_begin = len(main_text) + 1
+                        substitution_end = len(main_text) + len(group_card) + 2
+                        main_text += ' @{} '.format(group_card)
                     if str(my_uid) == str(msg_data['qq']) or str(msg_data['qq']) == 'all':
                         at_list[(substitution_begin, substitution_end)] = EFBChat(self.channel).self()
                 else:
