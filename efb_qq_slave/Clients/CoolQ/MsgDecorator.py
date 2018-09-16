@@ -133,7 +133,13 @@ class QQMsgProcessor:
         # todo this function's maybe not necessary?
         pass
 
-    def qq_rich_wrapper(self, data) -> EFBMsg:
+    def qq_sign_wrapper(self, data) -> EFBMsg:
+        efb_msg = EFBMsg()
+        efb_msg.type = MsgType.Text
+        efb_msg.text = 'signed in at ' + data['location']
+        return efb_msg
+
+    def qq_rich_wrapper(self, data) -> EFBMsg:  # Buggy, Help needed
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Unsupported
         efb_msg.text += '[Here comes the Rich Text, dumping...]'
