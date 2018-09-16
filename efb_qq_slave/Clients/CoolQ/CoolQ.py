@@ -97,7 +97,7 @@ class CoolQ(BaseClient):
                 else:
                     messages.append(self.call_msg_decorator(msg_type, msg_data))
             if main_text != "":
-                messages.append(self.msg_decorator.qq_text_simple_wrapper(main_text, at_list))
+                messages.append(self.msg_decorator.qq_text_simple_wrapper(main_text.lstrip(), at_list))
             uid: str = str(uuid.uuid4())
             coolq_msg_id = context['message_id']
             for i in range(len(messages)):
@@ -129,7 +129,8 @@ class CoolQ(BaseClient):
                 else:
                     efb_msg.chat: EFBChat = self.chat_manager.build_efb_chat_as_group(context)
 
-                if context['message_type'] == 'discuss':
+                # Append discuss group into group list
+                if context['message_type'] == 'discuss' and efb_msg.chat not in self.discuss_list:
                     self.discuss_list.append(efb_msg.chat)
 
                 efb_msg.deliver_to = coordinator.master
@@ -224,9 +225,30 @@ class CoolQ(BaseClient):
     def run_instance(self, *args, **kwargs):
         threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
 
-    def relogin(self):
-        self.coolq_api_query('set_restart')
-        # self.coolq_bot.set_restart()
+    @extra(name="Restart CoolQ Client",
+           desc="Force CoolQ to restart\n"
+                "Usage: {function_name} [-l] [-c] [-e]\n"
+                "    -l: Restart and clean log\n"
+                "    -c: Restart and clean cache\n"
+                "    -e: Restart and clean event\n")
+    def relogin(self, param: str = ""):
+        param_dict = dict()
+        if param:
+            params = param.split(' ')
+            for each_param in params:
+                if each_param == ' ':
+                    continue
+                if each_param == '-l':
+                    param_dict['clean_log'] = 'true'
+                elif each_param == '-c':
+                    param_dict['clean_cache'] = 'true'
+                elif each_param == '-e':
+                    param_dict['clean_event'] = 'true'
+                else:
+                    return "Unknown parameter: {}.".format(param)
+        self.logger.log(repr(param_dict))
+        self.coolq_api_query('set_restart', **param_dict)
+        return 'Done. Please wait for a while.'
 
     def logout(self):
         raise NotImplementedError
