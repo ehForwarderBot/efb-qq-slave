@@ -104,7 +104,7 @@ class CoolQ(BaseClient):
                 else:
                     messages.append(self.call_msg_decorator(msg_type, msg_data))
             if main_text != "":
-                messages.append(self.msg_decorator.qq_text_simple_wrapper(main_text.lstrip(), at_list))
+                messages.append(self.msg_decorator.qq_text_simple_wrapper(main_text, at_list))
             uid: str = str(uuid.uuid4())
             coolq_msg_id = context['message_id']
             for i in range(len(messages)):
