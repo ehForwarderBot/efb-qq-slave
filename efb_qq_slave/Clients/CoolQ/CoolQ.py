@@ -11,6 +11,7 @@ from PIL import Image
 from cqhttp import CQHttp
 from ehforwarderbot import EFBMsg, MsgType, EFBChat, coordinator, EFBStatus
 from ehforwarderbot.exceptions import EFBMessageError, EFBOperationNotSupported
+from ehforwarderbot.message import EFBMsgCommands, EFBMsgCommand
 from ehforwarderbot.status import EFBMessageRemoval
 from ehforwarderbot.utils import extra
 from requests import RequestException
@@ -217,10 +218,29 @@ class CoolQ(BaseClient):
             context['message'] = text
             self.send_msg_to_master(context)
 
-        @self.coolq_bot.on_request('group', 'friend')
-        def handle_request(context):
+        @self.coolq_bot.on_request('friend')  # Add friend request
+        def handle_add_friend_request(context):
             self.logger.debug(repr(context))
-            # todo
+            context['event_description'] = '\u2139 New Friend Request'
+            context['uid_prefix'] = 'friend_request'
+            text = '{nickname}({context[user_id]}) wants to be your friend!\nHere is the verification comment:\n' \
+                   '{context[comment]}'
+            text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
+                               context=context)
+            context['message'] = text
+            commands = [EFBMsgCommand(
+                name="Accept",
+                callable_name="process_friend_request",
+                kwargs={'result': 'accept',
+                        'flag': context['flag']}
+            ), EFBMsgCommand(
+                name="Decline",
+                callable_name="process_friend_request",
+                kwargs={'result': 'decline',
+                        'flag': context['flag']}
+            )]
+            context['commands'] = commands
+            self.send_msg_to_master(context)
 
         self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
 
@@ -583,7 +603,10 @@ class CoolQ(BaseClient):
         msg.type = MsgType.Text
         msg.uid = "__{context[uid_prefix]}__.{uni_id}".format(context=context,
                                                               uni_id=str(int(time.time())))
-        msg.text = context['message']
+        if 'message' in context:
+            msg.text = context['message']
+        if 'commands' in context:
+            msg.commands = EFBMsgCommands(context['commands'])
         coordinator.send_message(msg)
 
     # As the old saying goes
@@ -620,3 +643,14 @@ class CoolQ(BaseClient):
                                      'friend list. Please consult '
                                      'https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired'
                                      '-cookies-of-CoolQ for solutions.')
+
+    def process_friend_request(self, result, flag):
+        res = 'true' if result == 'accept' else 'false'
+        try:
+            self.coolq_api_query('set_friend_add_request',
+                                 approve=res,
+                                 flag=flag)
+        except CoolQAPIFailureException as e:
+            return ('Failed to process request! Error Message:\n'
+                    + getattr(e, 'message', repr(e)))
+        return 'Done'

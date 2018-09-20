@@ -92,7 +92,7 @@ class QQMessengerChannel(EFBChannel):
         # not sure how it works
         # todo Help Needed
         pass
-    
+
     def get_extra_functions(self):
         methods = {}
         for mName in dir(self.QQClient):
@@ -101,3 +101,12 @@ class QQMessengerChannel(EFBChannel):
                 if callable(m) and getattr(m, "extra_fn", False):
                     methods[mName] = m
         return methods
+
+    def __getattr__(self, name):
+        def method(*args, **kwargs):
+            func = getattr(self.QQClient, name)
+            if kwargs:
+                return func(**kwargs)
+            else:
+                return func()
+        return method
