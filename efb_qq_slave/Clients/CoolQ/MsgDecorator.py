@@ -123,7 +123,7 @@ class QQMsgProcessor:
         ])
         return efb_msg
 
-    def qq_big_face_wrapper(self, data) -> EFBMsg:
+    def qq_bface_wrapper(self, data) -> EFBMsg:
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Unsupported
         efb_msg.text += '[Here comes the BigFace Emoji, please check it on your phone]'
