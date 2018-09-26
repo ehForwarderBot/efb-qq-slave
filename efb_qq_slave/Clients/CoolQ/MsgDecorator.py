@@ -71,8 +71,10 @@ class QQMsgProcessor:
         return efb_msg
 
     def qq_record_wrapper(self, data) -> EFBMsg:
-        # todo Add audio support
-        pass
+        efb_msg = EFBMsg()
+        efb_msg.type = MsgType.Unsupported
+        efb_msg.text = '[Voice Message] Please check it on your QQ'
+        return efb_msg
 
     def qq_share_wrapper(self, data) -> EFBMsg:
         efb_msg = EFBMsg()
@@ -134,9 +136,11 @@ class QQMsgProcessor:
         pass
 
     def qq_sign_wrapper(self, data) -> EFBMsg:
+        location = data['location'] if data['location'] is not None else 'Unknown Place'
+        title = 'without title' if data['title'] is None else ('with title ' + data['title'])
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Text
-        efb_msg.text = 'signed in at ' + data['location']
+        efb_msg.text = 'signed in at ' + location + ' ' + title
         return efb_msg
 
     def qq_rich_wrapper(self, data) -> EFBMsg:  # Buggy, Help needed

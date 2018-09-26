@@ -7,6 +7,7 @@ from gettext import translation
 from ehforwarderbot import EFBChannel, ChannelType, EFBMsg, EFBStatus, EFBChat, MsgType
 from ehforwarderbot import utils as efb_utils
 from pkg_resources import resource_filename
+from . import __version__ as version
 
 from .Clients.BaseClient import BaseClient
 from .ClientMgr import ClientMgr
@@ -17,6 +18,8 @@ class QQMessengerChannel(EFBChannel):
     channel_emoji: str = "🐧"
     channel_id = "milkice.qq"
     channel_type: ChannelType = ChannelType.Slave
+
+    __version__ = version.__version__
 
     supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image,
                                MsgType.Link, MsgType.Audio}
