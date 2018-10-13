@@ -121,9 +121,11 @@ class CoolQ(BaseClient):
                             efb_msg.author = self.chat_manager.build_efb_chat_as_system_user(context)
                         else:
                             g_id = context['group_id']
-                            context['alias'] = self.coolq_api_query('get_group_member_info',
-                                                                    group_id=g_id,
-                                                                    user_id=qq_uid)['card']
+                            member_info = self.coolq_api_query('get_group_member_info',
+                                                               group_id=g_id,
+                                                               user_id=qq_uid)
+                            if member_info is not None:
+                                context['alias'] = member_info['card']
                             efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
                     else:
                         if context['message_type'] == 'private':
@@ -371,7 +373,7 @@ class CoolQ(BaseClient):
 
         if msg.type in [MsgType.Text, MsgType.Link]:
             if isinstance(msg.target, EFBMsg):
-                max_length = -1  # todo
+                max_length = 50
                 tgt_text = coolq_text_encode(process_quote_text(msg.target.text, max_length))
                 user_type = msg.target.author.chat_uid.split('_')
                 tgt_alias = ""

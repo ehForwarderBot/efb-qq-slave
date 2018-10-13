@@ -106,23 +106,12 @@ class QQMsgProcessor:
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Text
         uid = data['id']
-        user_data = self.inst.get_stranger_info(user_id=uid)
-        txt = "Friend Request Received\n"
-        "UID: {user[user_id]}\n"
-        "Nickname: {user[nickname]}\n"
-        "Age: {user[age]}\n"
-        "Gender: {user[sex]}"
+        contact_type = data['type']
+        txt = "Chat Recommendation Received\nID: {}\nType: {}"
 
-        txt = txt.format(user=user_data)
+        txt = txt.format(uid, contact_type)
         efb_msg.text = txt
         efb_msg.type = MsgType.Text
-        efb_msg.commands = EFBMsgCommands([
-            EFBMsgCommand(
-                name="Send friend request",
-                callable_name="add_friend",  # todo Add add_friend() to handle friend request
-                kwargs={"uid": uid}
-            )
-        ])
         return efb_msg
 
     def qq_bface_wrapper(self, data) -> EFBMsg:
@@ -136,18 +125,18 @@ class QQMsgProcessor:
         pass
 
     def qq_sign_wrapper(self, data) -> EFBMsg:
-        location = data['location'] if data['location'] is not None else 'Unknown Place'
-        title = 'without title' if data['title'] is None else ('with title ' + data['title'])
+        location = data['location'] if 'location' in data else 'Unknown Place'
+        title = 'without title' if 'title' not in data else ('with title ' + data['title'])
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Text
         efb_msg.text = 'signed in at ' + location + ' ' + title
         return efb_msg
 
-    def qq_rich_wrapper(self, data) -> EFBMsg:  # Buggy, Help needed
+    def qq_rich_wrapper(self, data: dict) -> EFBMsg:  # Buggy, Help needed
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Unsupported
-        efb_msg.text += '[Here comes the Rich Text, dumping...]'
-        for key, value in data.iteritems():
+        efb_msg.text = '[Here comes the Rich Text, dumping...] '
+        for key, value in data.items():
             efb_msg.text += key + ':' + value + '\n'
         return efb_msg
 
