@@ -115,11 +115,14 @@ class CoolQ(BaseClient):
                 efb_msg.uid = uid + '_' + str(coolq_msg_id) + '_' + str(i)
                 # if qq_uid != '80000000':
                 if 'anonymous' not in context or context['anonymous'] is None:
+                    remark = self.get_friend_remark(qq_uid)
                     if context['message_type'] == 'group':
                         if context['sub_type'] == 'notice':
                             context['event_description'] = "System Notification"
                             efb_msg.author = self.chat_manager.build_efb_chat_as_system_user(context)
                         else:
+                            if remark is not None:
+                                context['nickname'] = remark
                             g_id = context['group_id']
                             member_info = self.coolq_api_query('get_group_member_info',
                                                                group_id=g_id,
@@ -129,7 +132,7 @@ class CoolQ(BaseClient):
                             efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
                     else:
                         if context['message_type'] == 'private':
-                            context['alias'] = self.get_friend_remark(qq_uid)
+                            context['alias'] = remark
                         efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
                 else:  # anonymous user in group
                     efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_anonymous_user(context)
@@ -583,7 +586,7 @@ class CoolQ(BaseClient):
                     return current_user['nickname']
                 else:
                     return current_user['remark']
-        return ''
+        return None  # I don't think you've got such a friend
 
     def send_efb_group_notice(self, context):
         context['message_type'] = 'group'
@@ -656,3 +659,4 @@ class CoolQ(BaseClient):
             return ('Failed to process request! Error Message:\n'
                     + getattr(e, 'message', repr(e)))
         return 'Done'
+
