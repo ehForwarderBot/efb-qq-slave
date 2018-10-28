@@ -131,7 +131,7 @@ class CoolQ(BaseClient):
                                 context['alias'] = member_info['card']
                             efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
                     else:
-                        if context['message_type'] == 'private':
+                        if context['message_type'] == 'private' or context['message_type'] == 'discuss':
                             context['alias'] = remark
                         efb_msg.author: EFBChat = self.chat_manager.build_efb_chat_as_user(context, False)
                 else:  # anonymous user in group
