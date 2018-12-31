@@ -21,7 +21,7 @@ from .Exceptions import CoolQDisconnectedException, CoolQAPIFailureException, Co
     CoolQUnknownException
 from .MsgDecorator import QQMsgProcessor
 from .Utils import qq_emoji_list, async_send_messages_to_master, process_quote_text, coolq_text_encode, \
-    upload_image_smms
+    upload_image_smms, download_file_from_qzone
 from ..BaseClient import BaseClient
 from ... import QQMessengerChannel
 
@@ -209,6 +209,22 @@ class CoolQ(BaseClient):
                                group_name=group_name) + file_info_msg
             context['message'] = text
             self.send_efb_group_notice(context)
+
+            cred = self.coolq_api_query('get_credentials')
+            cookies = cred['cookies']
+            csrf_token = cred['csrf_token']
+            param_dict = {
+                'context': context,
+                'cookie': cookies,
+                'csrf_token': csrf_token,
+                'uin': self.get_qq_uid(),
+                'group_id': context['group_id'],
+                'file_id': context['file']['id'],
+                'filename': context['file']['name'],
+                'file_size': context['file']['size']
+            }
+
+            threading.Thread(target=self.async_download_file, args=[], kwargs=param_dict).start()
 
         @self.coolq_bot.on_notice('friend_add')
         def handle_friend_add_msg(context):
@@ -656,3 +672,21 @@ class CoolQ(BaseClient):
             return ('Failed to process request! Error Message:\n'
                     + getattr(e, 'message', repr(e)))
         return 'Done'
+
+    def async_download_file(self, context, **kwargs):
+        res = download_file_from_qzone(**kwargs)
+        if isinstance(res, str):
+            context['message'] = "[Download] " + res
+            self.send_efb_group_notice(context)
+        elif res is None:
+            pass
+        else:
+            data = {'file': res, 'filename': context['file']['name']}
+            context['message_type'] = 'group'
+            efb_msg = self.msg_decorator.qq_file_after_wrapper(data)
+            efb_msg.uid = str(context['user_id']) + '_' + str(uuid.uuid4()) + '_' + str(1)
+            efb_msg.text = 'Sent a file'
+            efb_msg.author = self.chat_manager.build_efb_chat_as_user(context, False)
+            efb_msg.chat = self.chat_manager.build_efb_chat_as_group(context)
+            efb_msg.deliver_to = coordinator.master
+            async_send_messages_to_master(efb_msg)

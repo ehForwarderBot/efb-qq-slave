@@ -1,9 +1,12 @@
 # coding: utf-8
 import json
 import logging
+import os
+import shutil
 import tempfile
 import urllib.request
 from urllib.error import URLError, HTTPError, ContentTooShortError
+from urllib.parse import quote
 
 import requests
 from ehforwarderbot import EFBMsg, coordinator
@@ -211,3 +214,53 @@ def upload_image_smms(file, path):  # Upload image to sm.ms and return the link
         else:
             logging.getLogger(__name__).warning('WARNING: {}'.format(status['msg']))
             raise CoolQUnknownException(status['msg'])
+
+
+def param_spliter(str_param):
+    params = str_param.split(";")
+    param = {}
+    for _ in params:
+        key, value = _.strip().split("=")
+        param[key] = value
+    return param
+
+
+def download_file_from_qzone(cookie: str, csrf_token: str, uin, group_id, file_id, filename, file_size):
+    cookie_arr = param_spliter(cookie)
+    url = "http://qun.qzone.qq.com/cgi-bin/group_share_get_downurl?uin=" + str(uin) + "&pa=/104/" + \
+          str(file_id) + "&groupid=" + str(group_id) + "&bussinessid=0&charset=utf-8&g_tk=" + str(csrf_token) + "&r=888"
+    ret = requests.get(url, cookies=cookie_arr)
+    data = json.loads(ret.text.split("(")[1].split(")")[0])['data']
+    cookie += "; FTN5K=" + str(data['cookie'])
+    download_url = data['url']
+    download_url += "/" + quote(filename)
+    if file_size >= 50*1024*1024:  # File size is bigger than 50MiB
+        return "File is too big to be downloaded"
+    file = tempfile.NamedTemporaryFile()
+    try:
+        opener = urllib.request.build_opener()
+        opener.addheaders.append(('Cookie', cookie))
+        urllib.request.install_opener(opener)
+        urllib.request.urlretrieve(download_url, file.name)
+    except (URLError, HTTPError, ContentTooShortError) as e:
+        logging.getLogger(__name__).warning("Error occurs when downloading files: " + str(e))
+        return "Error occurs when downloading files: " + str(e)
+    else:
+        if file.seek(0, 2) <= 0:
+            raise EOFError('File downloaded is Empty')
+        file.seek(0)
+        return file
+    '''
+    try:
+        opener = urllib.request.build_opener()
+        opener.addheaders.append(('Cookie', cookie))
+        with opener.open(download_url) as response, tempfile.NamedTemporaryFile() as f:
+            shutil.copyfileobj(response, f)
+            if f.seek(0, 2) <= 0:
+                raise EOFError('File downloaded is Empty')
+            f.seek(0)
+            return f
+    except Exception as e:
+        logging.getLogger(__name__).warning("Error occurs when downloading files" + str(e))
+        return url
+    '''

@@ -171,3 +171,14 @@ class QQMsgProcessor:
         # there's no need to escape the special characters
         return '[CQ:image,file=base64://{}]'.format(encoded_string.decode())
 
+    def qq_file_after_wrapper(self, data) -> EFBMsg:
+        efb_msg = EFBMsg()
+        efb_msg.file = data['file']
+        efb_msg.type = MsgType.File
+        mime = magic.from_file(efb_msg.file.name, mime=True)
+        if isinstance(mime, bytes):
+            mime = mime.decode()
+        efb_msg.path = efb_msg.file.name
+        efb_msg.mime = mime
+        efb_msg.filename = data['filename']
+        return efb_msg
