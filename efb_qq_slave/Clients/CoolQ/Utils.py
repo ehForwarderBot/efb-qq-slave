@@ -153,8 +153,9 @@ def cq_get_image(image_link: str) -> tempfile:  # Download image from QQ
     file = tempfile.NamedTemporaryFile()
     try:
         urllib.request.urlretrieve(image_link, file.name)
-    except (URLError, HTTPError, ContentTooShortError):
+    except (URLError, HTTPError, ContentTooShortError) as e:
         logging.getLogger(__name__).warning('Image download failed.')
+        logging.getLogger(__name__).warning(str(e))
         return None
     else:
         if file.seek(0, 2) <= 0:
