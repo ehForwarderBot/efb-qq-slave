@@ -7,7 +7,7 @@ import base64
 
 import magic
 from typing import Callable
-
+from urllib.parse import quote
 from ehforwarderbot import EFBMsg, MsgType, EFBChat, coordinator
 from ehforwarderbot.message import EFBMsgLocationAttribute, EFBMsgCommands, EFBMsgCommand, EFBMsgSubstitutions, \
     EFBMsgLinkAttribute
@@ -180,5 +180,5 @@ class QQMsgProcessor:
             mime = mime.decode()
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
-        efb_msg.filename = data['filename']
+        efb_msg.filename = quote(data['filename'])
         return efb_msg
