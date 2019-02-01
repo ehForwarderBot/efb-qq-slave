@@ -9,8 +9,29 @@
 
 有关详细信息，请访问 `配置文件文档 <https://cqhttp.cc/docs/4.4/#/Configuration>`_ 和 `HTTPS 文档 <https://github.com/richardchien/coolq-http-api/wiki/ HTTPS>`_。
 
-配置 酷Q 端
+现在有两种配置方式：利用 Docker 自动化部署，或是选择手动配置
+
+对于基础需求的用户（同一机器上运行 酷Q + EFB) 可选择使用 Docker，如需其他更高端的玩法可参照后文手动配置篇
+
+下文两种配置方案 请根据自己的需求二选一即可，无需一起配置
+
+
+方案一：Docker 一键配置
 ---------------------------
+**在此非常感谢** `青鸟 <https://github.com/blue-bird1>`_ **提供的 Docker 解决方案**
+
+项目地址：`https://github.com/Earth-Online/efb-qq-coolq-docker <https://github.com/Earth-Online/efb-qq-coolq-docker>`_
+
+在此之前，请确保系统已安装 docker 和 docker-compose
+
+1. 从 Github 上克隆此仓库
+
+``git clone https://github.com/Earth-Online/efb-qq-coolq-docker``
+
+2. 接下来的步骤请参阅 `此 README <https://github.com/Earth-Online/efb-qq-coolq-docker/blob/master/README.md>`_ 即可
+
+方案二：手动配置 - 配置 酷Q 端篇
+-----------------------------------
 
 - 如果您正在运行 Linux/OS X -> 推荐使用Docker(包含Wine)来运行酷Q
 
@@ -37,7 +58,7 @@
 
   - 酷Q Pro用户请注意
 
-    **请在docker run命令中添加额外参数** (``-e COOLQ_URL = "http://dlsec.cqp.me/cqp-tuling"``) **，以便docker下载CoolQ Pro而不是Air**
+    **请在docker run命令中添加额外参数** (``-e COOLQ_URL="http://dlsec.cqp.me/cqp-tuling"``) **，以便docker下载CoolQ Pro而不是Air**
 
   请注意，为了确保可以从 docker 内访问 ehforwarderbot，建议添加参数 ``--net ="host"``  。如果您遇到网络问题，请尝试删除此参数。
 
@@ -79,8 +100,8 @@
 
   4. 双击启动 酷Q, 输入您的QQ号&密码完成登录
 
-配置 ehForwarderBot 端
----------------------------
+方案二：手动配置 - 配置 ehForwarderBot 端篇
+----------------------------------------------------
 
 1. 为 ``milkice.qq`` 从端创建 ``config.yaml`` 配置文件
   

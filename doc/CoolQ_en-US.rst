@@ -9,8 +9,30 @@ For other situations, for example CoolQ and ehForwarderBot is running on differe
 
 For more details please visit `config documentation <https://cqhttp.cc/docs/4.4/#/Configuration>`_ and `HTTPS documentation <https://github.com/richardchien/coolq-http-api/wiki/HTTPS>`_.
 
-For CoolQ binary client
----------------------------
+Currently there're two ways to deploy this project, you can use either docker image or configure manually.
+
+Docker is convenient and useful especially for standard runtime environment.
+
+
+Option I: Use docker & docker-compose
+-------------------------------------
+
+**Thank** `Blue Bird <https://github.com/blue-bird1>`_ **for solution based on Docker**
+
+Project repo: `https://github.com/Earth-Online/efb-qq-coolq-docker <https://github.com/Earth-Online/efb-qq-coolq-docker>`_
+
+Before doing this, make sure the docker and docker-compose are installed on your system.
+
+1. Clone this repository from Github
+
+``git clone https://github.com/Earth-Online/efb-qq-coolq-docker``
+
+2. For the next steps, please refer to `this README <https://github.com/Earth-Online/efb-qq-coolq-docker/blob/master/README.md>`_
+
+
+
+Option II: Configure Manually - CoolQ Part
+------------------------------------------
 
 - If you are using Linux/OS X -> Docker(Wine Inside) is recommended for running CoolQ.
 
@@ -81,8 +103,8 @@ For CoolQ binary client
 
   4. Launch CoolQ, enter your account & password and complete the login procedure.
 
-For EH Forwarder Bot
----------------------------
+Option II: Configure Manually - EH Forwarder Bot Part
+-----------------------------------------------------
 
 1. Create ``config.yaml`` file for ``milkice.qq`` slave channel
 
