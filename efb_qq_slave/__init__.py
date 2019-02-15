@@ -31,13 +31,6 @@ class QQMessengerChannel(EFBChannel):
     QQClient: BaseClient
     logger: logging.Logger = logging.getLogger(__name__)
 
-    translator = translation("efb_qq_slave",
-                             resource_filename('efb_qq_slave', 'locale'),
-                             fallback=True)
-
-    t = translator.gettext
-    ngettext = translator.ngettext
-
     def __init__(self, instance_id: str = None):
         super().__init__(instance_id)
         """
