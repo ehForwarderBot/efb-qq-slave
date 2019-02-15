@@ -15,6 +15,8 @@ from ehforwarderbot.message import EFBMsgCommands, EFBMsgCommand
 from ehforwarderbot.status import EFBMessageRemoval
 from ehforwarderbot.utils import extra
 from requests import RequestException
+from gettext import translation
+from pkg_resources import resource_filename
 
 from .ChatMgr import ChatManager
 from .Exceptions import CoolQDisconnectedException, CoolQAPIFailureException, CoolQOfflineException, \
@@ -34,6 +36,13 @@ class CoolQ(BaseClient):
     coolq_bot: CQHttp = None
     logger: logging.Logger = logging.getLogger(__name__)
     channel: QQMessengerChannel
+
+    translator = translation("efb_qq_slave",
+                             resource_filename('efb_qq_slave', 'Clients/CoolQ/locale'),
+                             fallback=True)
+
+    _ = translator.gettext
+    ngettext = translator.ngettext
 
     friend_list = []
     group_list = []
@@ -80,7 +89,7 @@ class CoolQ(BaseClient):
                     g_id = context['group_id']
                     my_uid = self.get_qq_uid()
                     self.logger.debug('My QQ uid: %s\n'
-                                      'QQ who is mentioned: %s\n', my_uid, msg_data['qq'])
+                                      'QQ mentioned: %s\n', my_uid, msg_data['qq'])
                     group_card = ''
                     if str(msg_data['qq']) == 'all':
                         group_card = 'all'
@@ -118,7 +127,7 @@ class CoolQ(BaseClient):
                     remark = self.get_friend_remark(qq_uid)
                     if context['message_type'] == 'group':
                         if context['sub_type'] == 'notice':
-                            context['event_description'] = "System Notification"
+                            context['event_description'] = self._("System Notification")
                             efb_msg.author = self.chat_manager.build_efb_chat_as_system_user(context)
                         else:
                             if remark is not None:
@@ -155,8 +164,11 @@ class CoolQ(BaseClient):
 
         @self.coolq_bot.on_notice('group_increase')
         def handle_group_increase_msg(context):
-            context['event_description'] = '\u2139 Group Member Increase Event'
-            text = '{nickname}({context[user_id]}) joined the group({group_name})'
+            context['event_description'] = self._('\u2139 Group Member Increase Event')
+            if (context['sub_type']) == 'invite':
+                text = self._('{nickname}({context[user_id]}) joined the group({group_name}) via invitation')
+            else:
+                text = self._('{nickname}({context[user_id]}) joined the group({group_name})')
 
             original_group = self.get_group_info(context['group_id'], False)
             group_name = context['group_id']
@@ -165,48 +177,48 @@ class CoolQ(BaseClient):
             text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
                                context=context,
                                group_name=group_name)
-            if (context['sub_type']) == 'invite':
-                text += ' via invitation'
+
             context['message'] = text
             self.send_efb_group_notice(context)
 
         @self.coolq_bot.on_notice('group_decrease')
         def handle_group_decrease_msg(context):
-            context['event_description'] = "\u2139 Group Member Decrease Event"
+            context['event_description'] = self._("\u2139 Group Member Decrease Event")
             original_group = self.get_group_info(context['group_id'], False)
             group_name = context['group_id']
             if original_group is not None and 'group_name' in original_group:
                 group_name = original_group['group_name']
             text = ''
             if context['sub_type'] == 'kick_me':
-                text = "You've been kicked from the group" \
-                       + '({})'.format(group_name)
+                text = self._("You've been kicked from the group({})").format(group_name)
             else:
-                quit_msg = 'quited the group' if context['sub_type'] == 'leave' else 'was kicked from the group'
-                text = '{nickname}({context[user_id]}) {quit_msg}({group_name})'
+                if context['sub_type'] == 'leave':
+                    text = self._('{nickname}({context[user_id]}) quited the group({group_name})')
+                else:
+                    text = self._('{nickname}({context[user_id]}) was kicked from the group({group_name})')
                 text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
                                    context=context,
-                                   quit_msg=quit_msg,
                                    group_name=group_name)
             context['message'] = text
             self.send_efb_group_notice(context)
 
         @self.coolq_bot.on_notice('group_upload')
         def handle_group_file_upload_msg(context):
-            context['event_description'] = "\u2139 Group File Upload Event"
+            context['event_description'] = self._("\u2139 Group File Upload Event")
 
             original_group = self.get_group_info(context['group_id'], False)
             group_name = context['group_id']
             if original_group is not None and 'group_name' in original_group:
                 group_name = original_group['group_name']
 
-            file_info_msg = 'File ID: {file[id]} Filename: {file[name]} File size: {file[size]}'.format(
-                file=context['file'])
+            file_info_msg = self._('File ID: {file[id]}\n'
+                                   'Filename: {file[name]}\n'
+                                   'File size: {file[size]}').format(file=context['file'])
             member_info = self.coolq_api_query('get_group_member_info',
                                                group_id=context['group_id'],
                                                user_id=context['user_id'])
             group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
-            text = '{member_card}({context[user_id]}) uploaded a file to group({group_name})\n'
+            text = self._('{member_card}({context[user_id]}) uploaded a file to group({group_name})\n')
             text = text.format(member_card=group_card,
                                context=context,
                                group_name=group_name) + file_info_msg
@@ -231,9 +243,9 @@ class CoolQ(BaseClient):
 
         @self.coolq_bot.on_notice('friend_add')
         def handle_friend_add_msg(context):
-            context['event_description'] = '\u2139 New Friend Event'
+            context['event_description'] = self._('\u2139 New Friend Event')
             context['uid_prefix'] = 'friend_add'
-            text = '{nickname}({context[user_id]}) has become your friend!'
+            text = self._('{nickname}({context[user_id]}) has become your friend!')
             text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
                                context=context)
             context['message'] = text
@@ -242,20 +254,21 @@ class CoolQ(BaseClient):
         @self.coolq_bot.on_request('friend')  # Add friend request
         def handle_add_friend_request(context):
             self.logger.debug(repr(context))
-            context['event_description'] = '\u2139 New Friend Request'
+            context['event_description'] = self._('\u2139 New Friend Request')
             context['uid_prefix'] = 'friend_request'
-            text = '{nickname}({context[user_id]}) wants to be your friend!\nHere is the verification comment:\n' \
-                   '{context[comment]}'
+            text = self._('{nickname}({context[user_id]}) wants to be your friend!\n'
+                          'Here is the verification comment:\n'
+                          '{context[comment]}')
             text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
                                context=context)
             context['message'] = text
             commands = [EFBMsgCommand(
-                name="Accept",
+                name=self._("Accept"),
                 callable_name="process_friend_request",
                 kwargs={'result': 'accept',
                         'flag': context['flag']}
             ), EFBMsgCommand(
-                name="Decline",
+                name=self._("Decline"),
                 callable_name="process_friend_request",
                 kwargs={'result': 'decline',
                         'flag': context['flag']}
@@ -273,12 +286,12 @@ class CoolQ(BaseClient):
     def run_instance(self, *args, **kwargs):
         threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
 
-    @extra(name="Restart CoolQ Client",
-           desc="Force CoolQ to restart\n"
-                "Usage: {function_name} [-l] [-c] [-e]\n"
-                "    -l: Restart and clean log\n"
-                "    -c: Restart and clean cache\n"
-                "    -e: Restart and clean event\n")
+    @extra(name=_("Restart CoolQ Client"),
+           desc=_("Force CoolQ to restart\n"
+                  "Usage: {function_name} [-l] [-c] [-e]\n"
+                  "    -l: Restart and clean log\n"
+                  "    -c: Restart and clean cache\n"
+                  "    -e: Restart and clean event\n"))
     def relogin(self, param: str = ""):
         param_dict = dict()
         if param:
@@ -293,7 +306,7 @@ class CoolQ(BaseClient):
                 elif each_param == '-e':
                     param_dict['clean_event'] = 'true'
                 else:
-                    return "Unknown parameter: {}.".format(param)
+                    return self._("Unknown parameter: {}.").format(param)
         self.logger.debug(repr(param_dict))
         self.coolq_api_query('set_restart', **param_dict)
         return 'Done. Please wait for a while.'
@@ -301,9 +314,9 @@ class CoolQ(BaseClient):
     def logout(self):
         raise NotImplementedError
 
-    @extra(name="Check CoolQ Status",
-           desc="Force efb-qq-slave to refresh status from CoolQ Client.\n"
-                "Usage: {function_name}")
+    @extra(name=_("Check CoolQ Status"),
+           desc=_("Force efb-qq-slave to refresh status from CoolQ Client.\n"
+                  "Usage: {function_name}"))
     def login(self, param: str = ""):
         self.check_status_periodically(None)
         return 'Done'
@@ -338,8 +351,8 @@ class CoolQ(BaseClient):
         try:
             self.update_friend_list()  # Force update friend list
         except CoolQAPIFailureException:
-            self.deliver_alert_to_master('Failed to retrieve the friend list.\n'
-                                         'Only groups are shown.')
+            self.deliver_alert_to_master(self._('Failed to retrieve the friend list.\n'
+                                                'Only groups are shown.'))
             return []
         res = self.friend_list
         # res = self.coolq_bot._get_friend_list()
@@ -387,8 +400,8 @@ class CoolQ(BaseClient):
                     uid_type = msg.uid.split('_')
                     self.recall_message(uid_type[1])
                 except CoolQAPIFailureException:
-                    raise EFBOperationNotSupported("Failed to recall the message!\n"
-                                                   "This message may have already expired.")
+                    raise EFBOperationNotSupported(self._("Failed to recall the message!\n"
+                                                          "This message may have already expired."))
 
         if msg.type in [MsgType.Text, MsgType.Link]:
             if isinstance(msg.target, EFBMsg):
@@ -414,7 +427,7 @@ class CoolQ(BaseClient):
                         smms_data = upload_image_smms(msg.file, msg.path)
                     except CoolQUnknownException as e:
                         text = '[Image]'
-                        self.deliver_alert_to_master('Failed to upload the image to sm.ms! Return Msg: '
+                        self.deliver_alert_to_master(self._('Failed to upload the image to sm.ms! Return Msg: ')
                                                      + getattr(e, 'message', repr(e)))
                     else:
                         if smms_data is not None:
@@ -482,10 +495,12 @@ class CoolQ(BaseClient):
             func = getattr(self.coolq_bot, func_name)
             res = func(**kwargs)
         except RequestException as e:
-            raise CoolQDisconnectedException('Unable to connect to CoolQ Client! Error Message:\n{}'.format(repr(e)))
+            raise CoolQDisconnectedException(self._('Unable to connect to CoolQ Client!'
+                                                    'Error Message:\n{}').format(str(e)))
         except cqhttp.Error as ex:
-            api_ex = CoolQAPIFailureException('CoolQ HTTP API encountered an error!\n'
-                                              'Status Code:{} Return Code:{}'.format(ex.status_code, ex.retcode))
+            api_ex = CoolQAPIFailureException(self._('CoolQ HTTP API encountered an error!\n'
+                                                     'Status Code:{} '
+                                                     'Return Code:{}').format(ex.status_code, ex.retcode))
             # if ex.status_code == 200 and ex.retcode == 104:  # Cookie expired
             setattr(api_ex, 'status_code', ex.status_code)
             setattr(api_ex, 'retcode', ex.retcode)
@@ -498,7 +513,7 @@ class CoolQ(BaseClient):
         if res['good'] or res['online']:
             return True
         else:
-            raise CoolQOfflineException("CoolQ Client isn't working correctly!")
+            raise CoolQOfflineException(self._("CoolQ Client isn't working correctly!"))
 
     def coolq_api_query(self, func_name, **kwargs):
         """ # Do not call get_status too frequently
@@ -508,8 +523,8 @@ class CoolQ(BaseClient):
         if self.is_logged_in and self.is_connected:
             return self._coolq_api_wrapper(func_name, **kwargs)
         elif self.repeat_counter < 3:
-            self.deliver_alert_to_master('Your status is offline.\n'
-                                         'You may try login with /0_login')
+            self.deliver_alert_to_master(self._('Your status is offline.\n'
+                                                'You may try login with /0_login'))
             self.repeat_counter += 1
 
     def check_status_periodically(self, t_event):
@@ -520,17 +535,18 @@ class CoolQ(BaseClient):
             flag = self.check_running_status()
         except CoolQDisconnectedException as e:
             if self.repeat_counter < 3:
-                self.deliver_alert_to_master("We're unable to communicate with CoolQ Client.\n"
-                                             "Please check the connection and credentials provided.\n"
-                                             "{}".format(repr(e)))
+                self.deliver_alert_to_master(self._("We're unable to communicate with CoolQ Client.\n"
+                                                    "Please check the connection and credentials provided.\n"
+                                                    "{}").format(str(e)))
                 self.repeat_counter += 1
             self.is_connected = False
             self.is_logged_in = False
             interval = 3600
         except (CoolQOfflineException, CoolQAPIFailureException):
             if self.repeat_counter < 3:
-                self.deliver_alert_to_master('CoolQ is running in abnormal status.\n'
-                                             'You may need to relogin your account or have a check in CoolQ Client.\n')
+                self.deliver_alert_to_master(self._('CoolQ is running in abnormal status.\n'
+                                                    'You may need to relogin your account '
+                                                    'or have a check in CoolQ Client.\n'))
                 self.repeat_counter += 1
             self.is_connected = True
             self.is_logged_in = False
@@ -538,8 +554,9 @@ class CoolQ(BaseClient):
         else:
             if not flag:
                 if self.repeat_counter < 3:
-                    self.deliver_alert_to_master("We don't know why, but status check failed.\n"
-                                                 "Please enable debug mode and consult the log for more details.")
+                    self.deliver_alert_to_master(self._("We don't know why, but status check failed.\n"
+                                                        "Please enable debug mode and consult the log "
+                                                        "for more details."))
                     self.repeat_counter += 1
                 self.is_connected = True
                 self.is_logged_in = False
@@ -554,7 +571,7 @@ class CoolQ(BaseClient):
             threading.Timer(interval, self.check_status_periodically, [t_event]).start()
 
     def deliver_alert_to_master(self, message: str):
-        context = {'message': message, 'uid_prefix': 'alert', 'event_description': 'CoolQ Alert'}
+        context = {'message': message, 'uid_prefix': 'alert', 'event_description': self._('CoolQ Alert')}
         self.send_msg_to_master(context)
 
     def update_friend_list(self):
@@ -574,10 +591,12 @@ class CoolQ(BaseClient):
                 self.update_friend_list()
                 self.update_group_list()
             except CoolQAPIFailureException as ex:
-                if getattr(ex, 'status_code') == 200 and getattr(ex, 'retcode') == 104 and self.update_repeat_counter < 3:
+                if getattr(ex, 'status_code') == 200 and getattr(ex, 'retcode') == 104 \
+                        and self.update_repeat_counter < 3:
                     self.send_cookie_expired_alarm()
                 if self.update_repeat_counter < 3:
-                    self.deliver_alert_to_master('Errors occurred when updating contacts: ' + getattr(ex, 'message'))
+                    self.deliver_alert_to_master(self._('Errors occurred when updating contacts: ')
+                                                 + getattr(ex, 'message'))
                     self.update_repeat_counter += 1
             else:
                 self.update_repeat_counter = 0
@@ -590,7 +609,7 @@ class CoolQ(BaseClient):
             try:
                 self.update_friend_list()
             except CoolQAPIFailureException:
-                self.deliver_alert_to_master('Failed to obtain friend remark name')
+                self.deliver_alert_to_master(self._('Failed to obtain friend remark name'))
                 return ''
         for i in range(len(self.friend_list)):  # friend group
             for j in range(len(self.friend_list[i]['friends'])):
@@ -642,13 +661,13 @@ class CoolQ(BaseClient):
     def send_status(self, status: 'EFBStatus'):
         if isinstance(status, EFBMessageRemoval):
             if not status.message.author.is_self:
-                raise EFBMessageError('You can only recall your own messages.')
+                raise EFBMessageError(self._('You can only recall your own messages.'))
             try:
                 uid_type = status.message.uid.split('_')
                 self.recall_message(uid_type[1])
             except CoolQAPIFailureException:
                 raise EFBMessageError(
-                    'Failed to recall the message. This message may have already expired..')
+                    self._('Failed to recall the message. This message may have already expired.'))
         else:
             raise EFBOperationNotSupported()
         # todo
@@ -658,12 +677,12 @@ class CoolQ(BaseClient):
                              message_id=message_id)
 
     def send_cookie_expired_alarm(self):
-        self.deliver_alert_to_master('Your cookie of CoolQ Client seems to be expired. '
-                                     'Although it will not affect the normal functioning of sending/receiving '
-                                     'messages, however, you may encounter issues like failing to retrieve '
-                                     'friend list. Please consult '
-                                     'https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired'
-                                     '-cookies-of-CoolQ for solutions.')
+        self.deliver_alert_to_master(self._('Your cookie of CoolQ Client seems to be expired. '
+                                            'Although it will not affect the normal functioning of sending/receiving '
+                                            'messages, however, you may encounter issues like failing to retrieve '
+                                            'friend list. Please consult '
+                                            'https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired'
+                                            '-cookies-of-CoolQ for solutions.'))
 
     def process_friend_request(self, result, flag):
         res = 'true' if result == 'accept' else 'false'
@@ -672,14 +691,14 @@ class CoolQ(BaseClient):
                                  approve=res,
                                  flag=flag)
         except CoolQAPIFailureException as e:
-            return ('Failed to process request! Error Message:\n'
+            return (self._('Failed to process request! Error Message:\n')
                     + getattr(e, 'message', repr(e)))
         return 'Done'
 
     def async_download_file(self, context, **kwargs):
         res = download_file_from_qzone(**kwargs)
         if isinstance(res, str):
-            context['message'] = "[Download] " + res
+            context['message'] = self._("[Download] ") + res
             self.send_efb_group_notice(context)
         elif res is None:
             pass
