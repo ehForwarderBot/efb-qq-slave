@@ -1,0 +1,4 @@
+files:
+  - source: /efb_qq_slave/Clients/CoolQ
+    translation: >-
+      /efb_qq_slave/Clients/CoolQ/locale/%locale_with_underscore%/LC_MESSAGES/%original_file_name%
