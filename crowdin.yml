@@ -1,4 +1,4 @@
 files:
-  - source: /efb_qq_slave/Clients/CoolQ
+  - source: /efb_qq_slave/Clients/CoolQ/locale/default.pot
     translation: >-
       /efb_qq_slave/Clients/CoolQ/locale/%locale_with_underscore%/LC_MESSAGES/%original_file_name%
