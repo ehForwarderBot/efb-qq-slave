@@ -5,11 +5,13 @@ import os
 import shutil
 import tempfile
 import urllib.request
+from gettext import translation
 from urllib.error import URLError, HTTPError, ContentTooShortError
 from urllib.parse import quote
 
 import requests
 from ehforwarderbot import EFBMsg, coordinator
+from pkg_resources import resource_filename
 
 from .Exceptions import CoolQUnknownException
 
@@ -151,6 +153,12 @@ qq_sface_list = {
     40: '[眨眼]'
 }
 
+translator = translation("efb_qq_slave",
+                         resource_filename('efb_qq_slave', 'Clients/CoolQ/locale'),
+                         fallback=True)
+_ = translator.gettext
+ngettext = translator.ngettext
+
 
 def cq_get_image(image_link: str) -> tempfile:  # Download image from QQ
     file = tempfile.NamedTemporaryFile()
@@ -219,8 +227,8 @@ def upload_image_smms(file, path):  # Upload image to sm.ms and return the link
 def param_spliter(str_param):
     params = str_param.split(";")
     param = {}
-    for _ in params:
-        key, value = _.strip().split("=")
+    for _k in params:
+        key, value = _k.strip().split("=")
         param[key] = value
     return param
 
@@ -235,7 +243,7 @@ def download_file_from_qzone(cookie: str, csrf_token: str, uin, group_id, file_i
     download_url = data['url']
     download_url += "/" + quote(filename)
     if file_size >= 50*1024*1024:  # File size is bigger than 50MiB
-        return "File is too big to be downloaded"
+        return _("File is too big to be downloaded")
     file = tempfile.NamedTemporaryFile()
     try:
         opener = urllib.request.build_opener()
@@ -244,7 +252,7 @@ def download_file_from_qzone(cookie: str, csrf_token: str, uin, group_id, file_i
         urllib.request.urlretrieve(download_url, file.name)
     except (URLError, HTTPError, ContentTooShortError) as e:
         logging.getLogger(__name__).warning("Error occurs when downloading files: " + str(e))
-        return "Error occurs when downloading files: " + str(e)
+        return _("Error occurs when downloading files: ") + str(e)
     else:
         if file.seek(0, 2) <= 0:
             raise EOFError('File downloaded is Empty')
