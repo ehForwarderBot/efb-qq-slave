@@ -47,19 +47,20 @@ class QQMsgProcessor:
 
     def __init__(self, instance: CoolQ):
         self.inst = instance
+        self._ = instance._
         pass
 
     def qq_image_wrapper(self, data) -> EFBMsg:
         efb_msg = EFBMsg()
         if 'url' not in data:
             efb_msg.type = MsgType.Text
-            efb_msg.text = '[Download image failed, please check on your QQ client]'
+            efb_msg.text = self._('[Image Source missing]')
             return efb_msg
 
         efb_msg.file = cq_get_image(data['url'])
         if efb_msg.file is None:
             efb_msg.type = MsgType.Text
-            efb_msg.text = '[Download image failed, please check on your QQ client]'
+            efb_msg.text = self._('[Download image failed, please check on your QQ client]')
             return efb_msg
 
         efb_msg.type = MsgType.Image
@@ -73,7 +74,7 @@ class QQMsgProcessor:
     def qq_record_wrapper(self, data) -> EFBMsg:
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Unsupported
-        efb_msg.text = '[Voice Message] Please check it on your QQ'
+        efb_msg.text = self._('[Voice Message] Please check it on your QQ')
         return efb_msg
 
     def qq_share_wrapper(self, data) -> EFBMsg:
@@ -99,7 +100,7 @@ class QQMsgProcessor:
     def qq_shake_wrapper(self, data) -> EFBMsg:
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Text
-        efb_msg.text += '[Your friend shakes you!]'
+        efb_msg.text += self._('[Your friend shakes you!]')
         return efb_msg
 
     def qq_contact_wrapper(self, data) -> EFBMsg:
@@ -107,7 +108,7 @@ class QQMsgProcessor:
         efb_msg.type = MsgType.Text
         uid = data['id']
         contact_type = data['type']
-        txt = "Chat Recommendation Received\nID: {}\nType: {}"
+        txt = self._("Chat Recommendation Received\nID: {}\nType: {}")
 
         txt = txt.format(uid, contact_type)
         efb_msg.text = txt
@@ -117,7 +118,7 @@ class QQMsgProcessor:
     def qq_bface_wrapper(self, data) -> EFBMsg:
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Unsupported
-        efb_msg.text += '[Here comes the BigFace Emoji, please check it on your phone]'
+        efb_msg.text += self._('[Here comes the BigFace Emoji, please check it on your phone]')
         return efb_msg
 
     def qq_small_face_wrapper(self, data, merged_msg_id) -> EFBMsg:
@@ -125,17 +126,18 @@ class QQMsgProcessor:
         pass
 
     def qq_sign_wrapper(self, data) -> EFBMsg:
-        location = data['location'] if 'location' in data else 'Unknown Place'
-        title = 'without title' if 'title' not in data else ('with title ' + data['title'])
+        location = self._('at {}').format(data['location']) if 'location' in data else self._('at Unknown Place')
+        title = '' if 'title' not in data else (self._('with title {}').format(data['title']))
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Text
-        efb_msg.text = 'signed in at ' + location + ' ' + title
+        efb_msg.text = self._('signed in {location} {title}').format(title=title,
+                                                                     location=location)
         return efb_msg
 
     def qq_rich_wrapper(self, data: dict) -> EFBMsg:  # Buggy, Help needed
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Unsupported
-        efb_msg.text = '[Here comes the Rich Text, dumping...] '
+        efb_msg.text = self._('[Here comes the Rich Text, dumping...] \n')
         for key, value in data.items():
             efb_msg.text += key + ':' + value + '\n'
         return efb_msg
