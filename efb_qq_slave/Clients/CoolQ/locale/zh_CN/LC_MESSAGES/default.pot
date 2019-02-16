@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: efb-qq-slave\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-15 20:05+0800\n"
-"PO-Revision-Date: 2019-02-15 14:59\n"
+"PO-Revision-Date: 2019-02-16 02:17\n"
 "Last-Translator: Milkice <milkice@milkice.me>\n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -18,87 +18,91 @@ msgstr ""
 
 #: CoolQ.py:130
 msgid "System Notification"
-msgstr ""
+msgstr "系统通知"
 
 #: CoolQ.py:167
 msgid "\\u2139 Group Member Increase Event"
-msgstr ""
+msgstr "\\u2139 新群员加入群组"
 
 #: CoolQ.py:169
 #, python-brace-format
 msgid "{nickname}({context[user_id]}) joined the group({group_name}) via invitation"
-msgstr ""
+msgstr "{nickname}({context[user_id]}) 通过邀请加入群组({group_name})"
 
 #: CoolQ.py:171
 #, python-brace-format
 msgid "{nickname}({context[user_id]}) joined the group({group_name})"
-msgstr ""
+msgstr "{nickname}({context[user_id]}) 加入了群组({group_name})"
 
 #: CoolQ.py:186
 msgid "\\u2139 Group Member Decrease Event"
-msgstr ""
+msgstr "\\u2139 群员退出群组"
 
 #: CoolQ.py:193
 msgid "You've been kicked from the group({})"
-msgstr ""
+msgstr "您已被移出群组({})"
 
 #: CoolQ.py:196
 #, python-brace-format
 msgid "{nickname}({context[user_id]}) quited the group({group_name})"
-msgstr ""
+msgstr "{nickname}({context[user_id]}) 退出了群组({group_name})"
 
 #: CoolQ.py:198
 #, python-brace-format
 msgid "{nickname}({context[user_id]}) was kicked from the group({group_name})"
-msgstr ""
+msgstr "{nickname}({context[user_id]}) 从群组({group_name}) 中被踢出"
 
 #: CoolQ.py:207
 msgid "\\u2139 Group File Upload Event"
-msgstr ""
+msgstr "\\u2139 群文件上传"
 
 #: CoolQ.py:214
 #, python-brace-format
 msgid "File ID: {file[id]}\n"
 "Filename: {file[name]}\n"
 "File size: {file[size]}"
-msgstr ""
+msgstr "文件ID: {file[id]}\n"
+"文件名: {file[name]}\n"
+"文件大小: {file[size]}"
 
 #: CoolQ.py:221
 #, python-brace-format
 msgid "{member_card}({context[user_id]}) uploaded a file to group({group_name})\n"
-msgstr ""
+msgstr "{member_card}({context[user_id]}) 上传了一个文件到群组({group_name})\n"
 
 #: CoolQ.py:246
 msgid "\\u2139 New Friend Event"
-msgstr ""
+msgstr "\\u2139 新好友"
 
 #: CoolQ.py:248
 #, python-brace-format
 msgid "{nickname}({context[user_id]}) has become your friend!"
-msgstr ""
+msgstr "{nickname}({context[user_id]}) 已成为您的好友！"
 
 #: CoolQ.py:257
 msgid "\\u2139 New Friend Request"
-msgstr ""
+msgstr "\\u2139 新好友请求"
 
 #: CoolQ.py:259
 #, python-brace-format
 msgid "{nickname}({context[user_id]}) wants to be your friend!\n"
 "Here is the verification comment:\n"
 "{context[comment]}"
-msgstr ""
+msgstr "{nickname}({context[user_id]}) 向您发送了好友请求！\n"
+"以下是验证消息：\n"
+"{context[comment]}"
 
 #: CoolQ.py:266
 msgid "Accept"
-msgstr ""
+msgstr "同意"
 
 #: CoolQ.py:271
 msgid "Decline"
-msgstr ""
+msgstr "拒绝"
 
 #: CoolQ.py:289
 msgid "Restart CoolQ Client"
-msgstr ""
+msgstr "重启 酷Q 客户端"
 
 #: CoolQ.py:290
 #, python-brace-format
@@ -107,155 +111,172 @@ msgid "Force CoolQ to restart\n"
 "    -l: Restart and clean log\n"
 "    -c: Restart and clean cache\n"
 "    -e: Restart and clean event\n"
-msgstr ""
+msgstr "强制命令 酷Q 重启\n"
+"用法：{function_name} [-l] [-c] [-e]\n"
+"    -l: 重启并清除日志\n"
+"    -c: 重启并清除缓存\n"
+"    -e: 重启并清除事件\n"
 
 #: CoolQ.py:309
 msgid "Unknown parameter: {}."
-msgstr ""
+msgstr "未知参数：{}"
 
 #: CoolQ.py:317
 msgid "Check CoolQ Status"
-msgstr ""
+msgstr "检查 酷Q 运行状态"
 
 #: CoolQ.py:318
 #, python-brace-format
 msgid "Force efb-qq-slave to refresh status from CoolQ Client.\n"
 "Usage: {function_name}"
-msgstr ""
+msgstr "强制命令 efb-qq-slave 从 酷Q 客户端刷新状态\n"
+"用法: {function_name}"
 
 #: CoolQ.py:354
 msgid "Failed to retrieve the friend list.\n"
 "Only groups are shown."
-msgstr ""
+msgstr "检索好友列表失败。\n"
+"仅显示群组列表。"
 
 #: CoolQ.py:403
 msgid "Failed to recall the message!\n"
 "This message may have already expired."
-msgstr ""
+msgstr "撤回消息失败!\n"
+"此消息可能已经过期。"
 
 #: CoolQ.py:430
 msgid "Failed to upload the image to sm.ms! Return Msg: "
-msgstr ""
+msgstr "上传图片到 sm.ms 失败！错误消息： "
 
 #: CoolQ.py:498
 msgid "Unable to connect to CoolQ Client!Error Message:\n"
 "{}"
-msgstr ""
+msgstr "无法连接到 CoolQ 客户端！错误消息：\n"
+"{}"
 
 #: CoolQ.py:501
 msgid "CoolQ HTTP API encountered an error!\n"
 "Status Code:{} Return Code:{}"
-msgstr ""
+msgstr "CoolQ HTTP API 遇到错误！\n"
+"状态代码：{} 返回代码：{}"
 
 #: CoolQ.py:516
 msgid "CoolQ Client isn't working correctly!"
-msgstr ""
+msgstr "酷Q 客户端无法正常工作!"
 
 #: CoolQ.py:526
 msgid "Your status is offline.\n"
 "You may try login with /0_login"
-msgstr ""
+msgstr "您的 酷Q 帐号现处于离线状态\n"
+"您可以尝试使用 /0_login 命令登录"
 
 #: CoolQ.py:538
 msgid "We're unable to communicate with CoolQ Client.\n"
 "Please check the connection and credentials provided.\n"
 "{}"
-msgstr ""
+msgstr "我们无法与 酷Q 客户端通信。\n"
+"请检查连接以及所提供的连接凭据\n"
+" {}"
 
 #: CoolQ.py:547
 msgid "CoolQ is running in abnormal status.\n"
 "You may need to relogin your account or have a check in CoolQ Client.\n"
-msgstr ""
+msgstr "酷Q 处于异常状态。\n"
+"您可能需要在 酷Q 客户端中重新登录您的 QQ 账户。\n"
 
 #: CoolQ.py:557
 msgid "We don't know why, but status check failed.\n"
 "Please enable debug mode and consult the log for more details."
-msgstr ""
+msgstr "出于未知原因，登录状态检查失败。\n"
+"请启用调试模式，并查阅日志以了解更多详细信息。"
 
 #: CoolQ.py:574
 msgid "CoolQ Alert"
-msgstr ""
+msgstr "酷Q 警告"
 
 #: CoolQ.py:598
 msgid "Errors occurred when updating contacts: "
-msgstr ""
+msgstr "更新好友列表时发生错误： "
 
 #: CoolQ.py:612
 msgid "Failed to obtain friend remark name"
-msgstr ""
+msgstr "无法获取好友备注名称"
 
 #: CoolQ.py:664
 msgid "You can only recall your own messages."
-msgstr ""
+msgstr "你只能撤回自己的消息。"
 
 #: CoolQ.py:670
 msgid "Failed to recall the message. This message may have already expired."
-msgstr ""
+msgstr "撤回消息失败！\n"
+"此消息可能已经过期。"
 
 #: CoolQ.py:680
 msgid "Your cookie of CoolQ Client seems to be expired. Although it will not affect the normal functioning of sending/receiving messages, however, you may encounter issues like failing to retrieve friend list. Please consult https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired-cookies-of-CoolQ for solutions."
-msgstr ""
+msgstr "酷Q 客户端的 cookie 似乎已过期。虽然它不会影响消息的发送/接收，但您可能会遇到无法获取好友列表等问题。有关解决方案，请查阅 https://github.com/milkice233/efb-qq-slave/wiki/Workaround-for-expired-cookies-of-CoolQ 。"
 
 #: CoolQ.py:694
 msgid "Failed to process request! Error Message:\n"
-msgstr ""
+msgstr "处理请求失败！错误消息：\n"
 
 #: CoolQ.py:701
 msgid "[Download] "
-msgstr ""
+msgstr "[文件下载] "
 
 #: MsgDecorator.py:57
 msgid "[Image Source missing]"
-msgstr ""
+msgstr "[图片 Url 丢失]"
 
 #: MsgDecorator.py:63
 msgid "[Download image failed, please check on your QQ client]"
-msgstr ""
+msgstr "[下载图片失败，请在 QQ 客户端上查看]"
 
 #: MsgDecorator.py:77
 msgid "[Voice Message] Please check it on your QQ"
-msgstr ""
+msgstr "[语音消息] 请在 QQ 客户端上查看"
 
 #: MsgDecorator.py:103
 msgid "[Your friend shakes you!]"
-msgstr ""
+msgstr "[你的好友抖了下你!]"
 
 #: MsgDecorator.py:111
 msgid "Chat Recommendation Received\n"
 "ID: {}\n"
 "Type: {}"
-msgstr ""
+msgstr "收到会话推荐\n"
+"ID：{}\n"
+"类型：{}"
 
 #: MsgDecorator.py:121
 msgid "[Here comes the BigFace Emoji, please check it on your phone]"
-msgstr ""
+msgstr "[大表情] 请在 QQ 客户端上查看"
 
 #: MsgDecorator.py:129
 msgid "at {}"
-msgstr ""
+msgstr "在 {}"
 
 #: MsgDecorator.py:129
 msgid "at Unknown Place"
-msgstr ""
+msgstr "在 未知地点"
 
 #: MsgDecorator.py:130
 msgid "with title {}"
-msgstr ""
+msgstr "，标题为 {}"
 
 #: MsgDecorator.py:133
 #, python-brace-format
 msgid "signed in {location} {title}"
-msgstr ""
+msgstr "{location} 签到 {title}"
 
 #: MsgDecorator.py:140
 msgid "[Here comes the Rich Text, dumping...] \n"
-msgstr ""
+msgstr "[收到富文本消息, 已展开详细内容...] \n"
 
 #: Utils.py:247
 msgid "File is too big to be downloaded"
-msgstr ""
+msgstr "文件过大，无法下载"
 
 #: Utils.py:256
 msgid "Error occurs when downloading files: "
-msgstr ""
+msgstr "下载文件时出错： "
 
