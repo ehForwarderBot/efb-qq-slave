@@ -308,7 +308,7 @@ class CoolQ(BaseClient):
                 else:
                     return self._("Unknown parameter: {}.").format(param)
         self.logger.debug(repr(param_dict))
-        self.coolq_api_query('set_restart', **param_dict)
+        self.coolq_api_query('_set_restart', **param_dict)
         return 'Done. Please wait for a while.'
 
     def logout(self):
