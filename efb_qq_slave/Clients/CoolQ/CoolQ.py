@@ -4,7 +4,7 @@ import tempfile
 import threading
 import time
 import uuid
-from typing import Any, Dict, List
+from typing import IO, Any, Dict, Optional, List, Tuple
 
 import cqhttp
 from PIL import Image
@@ -23,7 +23,7 @@ from .Exceptions import CoolQDisconnectedException, CoolQAPIFailureException, Co
     CoolQUnknownException
 from .MsgDecorator import QQMsgProcessor
 from .Utils import qq_emoji_list, async_send_messages_to_master, process_quote_text, coolq_text_encode, \
-    upload_image_smms, download_file_from_qzone
+    upload_image_smms, download_file_from_qzone, download_user_avatar, download_group_avatar
 from ..BaseClient import BaseClient
 from ... import QQMessengerChannel
 
@@ -712,3 +712,12 @@ class CoolQ(BaseClient):
             efb_msg.chat = self.chat_manager.build_efb_chat_as_group(context)
             efb_msg.deliver_to = coordinator.master
             async_send_messages_to_master(efb_msg)
+
+    def get_chat_picture(self, chat: EFBChat) -> IO[bytes]:
+        chat_type = chat.chat_uid.split('_')
+        if chat_type == 'private':
+            return download_user_avatar(chat_type[1])
+        elif chat_type == 'group':
+            return download_group_avatar(chat_type[1])
+        else:
+            return download_group_avatar("")

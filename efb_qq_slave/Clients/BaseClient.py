@@ -73,3 +73,6 @@ class BaseClient(ABC):
 
     def get_group_info(self, group_id):
         raise NotImplementedError
+
+    def get_chat_picture(self, chat):
+        raise NotImplementedError

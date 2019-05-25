@@ -272,3 +272,35 @@ def download_file_from_qzone(cookie: str, csrf_token: str, uin, group_id, file_i
         logging.getLogger(__name__).warning("Error occurs when downloading files" + str(e))
         return url
     '''
+
+
+def download_user_avatar(uid: str):
+    file = tempfile.NamedTemporaryFile()
+    url = "http://q1.qlogo.cn/g?b=qq&nk={}&s=640".format(uid)
+    try:
+        opener = urllib.request.build_opener()
+        urllib.request.install_opener(opener)
+        urllib.request.urlretrieve(url, file.name)
+    except (URLError, HTTPError, ContentTooShortError) as e:
+        logging.getLogger(__name__).warning("Error occurs when downloading files: " + str(e))
+        return _("Error occurs when downloading files: ") + str(e)
+    if file.seek(0, 2) <= 0:
+        raise EOFError('File downloaded is Empty')
+    file.seek(0)
+    return file
+
+
+def download_group_avatar(uid: str):
+    file = tempfile.NamedTemporaryFile()
+    url = "http://p.qlogo.cn/gh/{}/{}/640/".format(uid, uid)
+    try:
+        opener = urllib.request.build_opener()
+        urllib.request.install_opener(opener)
+        urllib.request.urlretrieve(url, file.name)
+    except (URLError, HTTPError, ContentTooShortError) as e:
+        logging.getLogger(__name__).warning("Error occurs when downloading files: " + str(e))
+        return _("Error occurs when downloading files: ") + str(e)
+    if file.seek(0, 2) <= 0:
+        raise EOFError('File downloaded is Empty')
+    file.seek(0)
+    return file
