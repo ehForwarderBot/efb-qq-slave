@@ -76,8 +76,7 @@ class QQMessengerChannel(EFBChannel):
         return self.QQClient.get_chats()
 
     def get_chat(self, chat_uid: str, member_uid: Optional[str] = None):
-        # todo
-        pass
+        return self.QQClient.get_chat(chat_uid, member_uid)
 
     def stop_polling(self):
         # not sure how it works
