@@ -1,9 +1,9 @@
 # coding: utf-8
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from ehforwarderbot import EFBMsg, EFBStatus
+from ehforwarderbot import EFBMsg, EFBStatus, EFBChat
 
 
 class BaseClient(ABC):
@@ -75,4 +75,10 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     def get_chat_picture(self, chat):
+        raise NotImplementedError
+
+    def get_chat(self, chat_uid: str, member_uid: Optional[str] = None) -> EFBChat:
+        raise NotImplementedError
+
+    def get_chats(self):
         raise NotImplementedError

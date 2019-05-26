@@ -10,7 +10,7 @@ import cqhttp
 from PIL import Image
 from cqhttp import CQHttp
 from ehforwarderbot import EFBMsg, MsgType, EFBChat, coordinator, EFBStatus
-from ehforwarderbot.exceptions import EFBMessageError, EFBOperationNotSupported
+from ehforwarderbot.exceptions import EFBMessageError, EFBOperationNotSupported, EFBChatNotFound
 from ehforwarderbot.message import EFBMsgCommands, EFBMsgCommand
 from ehforwarderbot.status import EFBMessageRemoval
 from ehforwarderbot.utils import extra
@@ -715,9 +715,34 @@ class CoolQ(BaseClient):
 
     def get_chat_picture(self, chat: EFBChat) -> IO[bytes]:
         chat_type = chat.chat_uid.split('_')
-        if chat_type == 'private':
+        if chat_type[0] == 'private':
             return download_user_avatar(chat_type[1])
-        elif chat_type == 'group':
+        elif chat_type[0] == 'group':
             return download_group_avatar(chat_type[1])
         else:
             return download_group_avatar("")
+
+    def get_chats(self):
+        qq_chats = self.get_friends()
+        group_chats = self.get_groups()
+        return qq_chats + group_chats
+
+    def get_chat(self, chat_uid: str, member_uid: Optional[str] = None) -> EFBChat:
+        # todo what is member_uid used for?
+        chat_type = chat_uid.split('_')
+        if chat_type[0] == 'private':
+            qq_uid = chat_type[1]
+            remark = self.get_friend_remark(qq_uid)
+            context = {"user_id": qq_uid}
+            if remark is not None:
+                context['alias'] = remark
+            return self.chat_manager.build_efb_chat_as_user(context, True)
+        elif chat_type[0] == 'group':
+            group_id = chat_type[1]
+            context = {'message_type': 'group', 'group_id': group_id}
+            return self.chat_manager.build_efb_chat_as_group(context)
+        elif chat_type[0] == 'discuss':
+            discuss_id = chat_type[1]
+            context = {'message_type': 'discuss', 'discuss_id': discuss_id}
+            return self.chat_manager.build_efb_chat_as_group(context)
+        raise EFBChatNotFound()

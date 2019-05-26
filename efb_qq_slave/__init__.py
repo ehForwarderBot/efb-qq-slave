@@ -68,17 +68,12 @@ class QQMessengerChannel(EFBChannel):
 
     def send_status(self, status: 'EFBStatus'):
         return self.QQClient.send_status(status)
-        pass
 
     def get_chat_picture(self, chat: 'EFBChat'):
-        # todo, availability depends on client
-        pass
+        return self.QQClient.get_chat_picture(chat)
 
     def get_chats(self):
-        qq_chats = self.QQClient.get_friends()
-        group_chats = self.QQClient.get_groups()
-        return qq_chats+group_chats
-        pass
+        return self.QQClient.get_chats()
 
     def get_chat(self, chat_uid: str, member_uid: Optional[str] = None):
         # todo
