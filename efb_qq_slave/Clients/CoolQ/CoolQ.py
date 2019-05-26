@@ -577,11 +577,17 @@ class CoolQ(BaseClient):
     def update_friend_list(self):
         # Warning: Experimental API
         self.friend_list = self.coolq_api_query('_get_friend_list')
-        self.logger.debug('Update friend list completed. Entries: %s', len(self.friend_list))
+        if self.friend_list:
+            self.logger.debug('Update friend list completed. Entries: %s', len(self.friend_list))
+        else:
+            self.logger.warning('Failed to update friend list')
 
     def update_group_list(self):
         self.group_list = self.coolq_api_query('get_group_list')
-        self.logger.debug('Update group list completed. Entries: %s', len(self.group_list))
+        if self.group_list:
+            self.logger.debug('Update group list completed. Entries: %s', len(self.group_list))
+        else:
+            self.logger.warning('Failed to update group list')
 
     def update_contacts_periodically(self, t_event):
         self.logger.debug('Start updating friend & group list')
