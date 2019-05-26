@@ -731,18 +731,18 @@ class CoolQ(BaseClient):
         # todo what is member_uid used for?
         chat_type = chat_uid.split('_')
         if chat_type[0] == 'private':
-            qq_uid = chat_type[1]
+            qq_uid = int(chat_type[1])
             remark = self.get_friend_remark(qq_uid)
             context = {"user_id": qq_uid}
             if remark is not None:
                 context['alias'] = remark
             return self.chat_manager.build_efb_chat_as_user(context, True)
         elif chat_type[0] == 'group':
-            group_id = chat_type[1]
+            group_id = int(chat_type[1])
             context = {'message_type': 'group', 'group_id': group_id}
             return self.chat_manager.build_efb_chat_as_group(context)
         elif chat_type[0] == 'discuss':
-            discuss_id = chat_type[1]
+            discuss_id = int(chat_type[1])
             context = {'message_type': 'discuss', 'discuss_id': discuss_id}
             return self.chat_manager.build_efb_chat_as_group(context)
         raise EFBChatNotFound()
