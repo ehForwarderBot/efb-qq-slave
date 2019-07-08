@@ -112,7 +112,7 @@ class CoolQ(BaseClient):
                     if str(my_uid) == str(msg_data['qq']) or str(msg_data['qq']) == 'all':
                         at_list[(substitution_begin, substitution_end)] = EFBChat(self.channel).self()
                 else:
-                    messages.append(self.call_msg_decorator(msg_type, msg_data))
+                    messages.extend(self.call_msg_decorator(msg_type, msg_data))
             if main_text != "":
                 messages.append(self.msg_decorator.qq_text_simple_wrapper(main_text, at_list))
             uid: str = str(uuid.uuid4())

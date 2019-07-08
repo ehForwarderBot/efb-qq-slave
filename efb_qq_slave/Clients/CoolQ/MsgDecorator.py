@@ -4,6 +4,8 @@ import logging
 import threading
 import uuid
 import base64
+import json
+import html
 
 import magic
 from typing import Callable
@@ -134,13 +136,21 @@ class QQMsgProcessor:
                                                                      location=location)
         return efb_msg
 
-    def qq_rich_wrapper(self, data: dict) -> EFBMsg:  # Buggy, Help needed
+    def qq_rich_wrapper(self, data: dict):  # Buggy, Help needed
+        efb_messages = list()
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Unsupported
         efb_msg.text = self._('[Here comes the Rich Text, dumping...] \n')
         for key, value in data.items():
             efb_msg.text += key + ':' + value + '\n'
-        return efb_msg
+        efb_messages.append(efb_msg)
+        # Optimizations for rich messages
+        # Group Broadcast
+        _ = self.qq_group_broadcast_wrapper(data)
+        if _ is not None:
+            efb_messages.append(_)
+
+        return efb_messages
 
     def qq_music_wrapper(self, data) -> EFBMsg:
         efb_msg = EFBMsg()
@@ -184,3 +194,67 @@ class QQMsgProcessor:
         efb_msg.mime = mime
         efb_msg.filename = quote(data['filename'])
         return efb_msg
+
+    def qq_group_broadcast_wrapper(self, data):
+        try:
+            at_list = {}
+            content_data = json.loads(data['content'])
+            text_data = base64.b64decode(content_data['mannounce']['text']).decode("UTF-8")
+            title_data = base64.b64decode(content_data['mannounce']['title']).decode("UTF-8")
+            text = "［群公告］ 【{title}】\n{text}".format(title=title_data, text=text_data)
+
+            if text == '':
+                substitution_begin = len(text)
+                substitution_end = len(text) + len('@all') + 1
+                text += '@all '
+            else:
+                substitution_begin = len(text) + 1
+                substitution_end = len(text) + len('@all') + 2
+                text += ' @all '
+            at_list[(substitution_begin, substitution_end)] = EFBChat(self.inst.channel).self()
+
+            if 'pic' in data['mannounce']:  # Picture Attached
+                # Assuming there's only one picture
+                data['url'] = "http://gdynamic.qpic.cn/gdynamic/{}/628".format(data['mannounce']['pic'][0]['url'])
+                efb_message = self.qq_image_wrapper(data)
+                efb_message.text = text
+                efb_message.substitutions = EFBMsgSubstitutions(at_list)
+                return efb_message
+            else:
+                return self.qq_text_simple_wrapper(text, at_list)
+        except Exception:
+            return self.qq_group_broadcast_alternative_wrapper(data)
+
+    def qq_group_broadcast_alternative_wrapper(self, data):
+        try:
+            at_list = {}
+            content_data = json.loads(data['content'])
+            group_id = content_data['mannounce']['gc']
+            notice_raw_data = self.inst.coolq_api_query("_get_group_notice",
+                                                        group_id=group_id)
+            notice_data = json.loads(notice_raw_data)
+            title_data = html.unescape(notice_data[0]['msg']['title'])
+            text_data = html.unescape(notice_data[0]['msg']['text'])
+            text = "［群公告］ 【{title}】\n{text}".format(title=title_data, text=text_data)
+
+            if text == '':
+                substitution_begin = len(text)
+                substitution_end = len(text) + len('@all') + 1
+                text += '@all '
+            else:
+                substitution_begin = len(text) + 1
+                substitution_end = len(text) + len('@all') + 2
+                text += ' @all '
+            at_list[(substitution_begin, substitution_end)] = EFBChat(self.inst.channel).self()
+
+            if 'pics' in html.unescape(notice_data[0]['msg']):  # Picture Attached
+                # Assuming there's only one picture
+                data['url'] = "http://gdynamic.qpic.cn/gdynamic/{}/628".format(notice_data[0]['msg']['pics'][0]['id'])
+                efb_message = self.qq_image_wrapper(data)
+                efb_message.text = text
+                efb_message.substitutions = EFBMsgSubstitutions(at_list)
+                return efb_message
+            else:
+                return self.qq_text_simple_wrapper(text, at_list)
+        except Exception:
+            return None
