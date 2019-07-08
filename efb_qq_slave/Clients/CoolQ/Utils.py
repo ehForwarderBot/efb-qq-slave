@@ -306,11 +306,11 @@ def download_group_avatar(uid: str):
     return file
 
 
-def get_friend_list_via_qq_show(cookie: str):
+def get_friend_list_via_qq_show(cookie: str, csrf_token: str):
     # This function won't check before execute, instead all the exceptions will be thrown
     cookie_arr = param_spliter(cookie)
     url = "http://show.qq.com/cgi-bin/qqshow_user_friendgroup?g_tk={csrf_token}&omode=4" \
-        .format(csrf_token=cookie_arr['csrf_token'])
+        .format(csrf_token=csrf_token)
     ret = requests.get(url, cookies=cookie_arr)
-    data = json.loads(ret)
+    data = json.loads(ret.text)
     return data['data']['group']

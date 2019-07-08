@@ -357,8 +357,25 @@ class CoolQ(BaseClient):
                                                 'Only groups are shown.'))
             return []
         res = self.friend_list
-        # res = self.coolq_bot._get_friend_list()
         users = []
+        for i in range(len(res)):  # friend group
+            for j in range(len(res[i]['friend'])):
+                current_user = res[i]['friend'][j]
+                txt = '[{}] {}'
+                txt = txt.format(res[i]['name'], current_user['name'])
+                nickname = self.get_stranger_info(current_user['uin'])['nickname']
+
+                if nickname == current_user['name']:  # no remark name
+                    context = {'user_id': str(current_user['uin']),
+                               'nickname': txt,
+                               'alias': None}
+                else:
+                    context = {'user_id': str(current_user['uin']),
+                               'nickname': nickname,
+                               'alias': txt}
+                efb_chat = self.chat_manager.build_efb_chat_as_user(context, True)
+                users.append(efb_chat)
+        '''
         for i in range(len(res)):  # friend group
             for j in range(len(res[i]['friends'])):
                 current_user = res[i]['friends'][j]
@@ -374,6 +391,7 @@ class CoolQ(BaseClient):
                                'alias': txt}
                 efb_chat = self.chat_manager.build_efb_chat_as_user(context, True)
                 users.append(efb_chat)
+        '''
         return users
 
     def receive_message(self):
@@ -580,7 +598,10 @@ class CoolQ(BaseClient):
         # Warning: Experimental API
         # self.friend_list = self.coolq_api_query('_get_friend_list')
         try:
-            self.friend_list = get_friend_list_via_qq_show(self.coolq_api_query('get_credentials'))
+            cred = self.coolq_api_query('get_credentials')
+            cookies = cred['cookies']
+            csrf_token = cred['csrf_token']
+            self.friend_list = get_friend_list_via_qq_show(cookies, csrf_token)
         except Exception:
             self.logger.warning('Failed to update friend list')
         if self.friend_list:
