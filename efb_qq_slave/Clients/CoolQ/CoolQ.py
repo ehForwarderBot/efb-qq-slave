@@ -363,16 +363,12 @@ class CoolQ(BaseClient):
                 current_user = res[i]['friend'][j]
                 txt = '[{}] {}'
                 txt = txt.format(res[i]['name'], current_user['name'])
-                nickname = self.get_stranger_info(current_user['uin'])['nickname']
+                # nickname = self.get_stranger_info(current_user['uin'])['nickname']
 
-                if nickname == current_user['name']:  # no remark name
-                    context = {'user_id': str(current_user['uin']),
-                               'nickname': txt,
-                               'alias': None}
-                else:
-                    context = {'user_id': str(current_user['uin']),
-                               'nickname': nickname,
-                               'alias': txt}
+                # Disable nickname & remark comparsion for it's too time-consuming
+                context = {'user_id': str(current_user['uin']),
+                           'nickname': txt,
+                           'alias': None}
                 efb_chat = self.chat_manager.build_efb_chat_as_user(context, True)
                 users.append(efb_chat)
         '''
