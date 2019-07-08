@@ -52,7 +52,7 @@ class QQMsgProcessor:
         self._ = instance._
         pass
 
-    def qq_image_wrapper(self, data) -> EFBMsg:
+    def qq_image_wrapper(self, data):
         efb_msg = EFBMsg()
         if 'url' not in data:
             efb_msg.type = MsgType.Text
@@ -71,15 +71,15 @@ class QQMsgProcessor:
             mime = mime.decode()
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
-        return efb_msg
+        return [efb_msg]
 
-    def qq_record_wrapper(self, data) -> EFBMsg:
+    def qq_record_wrapper(self, data):
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Unsupported
         efb_msg.text = self._('[Voice Message] Please check it on your QQ')
-        return efb_msg
+        return [efb_msg]
 
-    def qq_share_wrapper(self, data) -> EFBMsg:
+    def qq_share_wrapper(self, data):
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Link
         efb_msg.text = ''
@@ -89,23 +89,23 @@ class QQMsgProcessor:
             image='' if 'image' not in data else data['image'],
             url=data['url']
         )
-        return efb_msg
+        return [efb_msg]
 
-    def qq_location_wrapper(self, data) -> EFBMsg:
+    def qq_location_wrapper(self, data):
         efb_msg = EFBMsg()
         efb_msg.text = data['content']
         efb_msg.attributes = EFBMsgLocationAttribute(longitude=float(data['lon']),
                                                      latitude=float(data['lat']))
         efb_msg.type = MsgType.Location
-        return efb_msg
+        return [efb_msg]
 
-    def qq_shake_wrapper(self, data) -> EFBMsg:
+    def qq_shake_wrapper(self, data):
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Text
         efb_msg.text += self._('[Your friend shakes you!]')
-        return efb_msg
+        return [efb_msg]
 
-    def qq_contact_wrapper(self, data) -> EFBMsg:
+    def qq_contact_wrapper(self, data):
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Text
         uid = data['id']
@@ -115,26 +115,26 @@ class QQMsgProcessor:
         txt = txt.format(uid, contact_type)
         efb_msg.text = txt
         efb_msg.type = MsgType.Text
-        return efb_msg
+        return [efb_msg]
 
-    def qq_bface_wrapper(self, data) -> EFBMsg:
+    def qq_bface_wrapper(self, data):
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Unsupported
         efb_msg.text += self._('[Here comes the BigFace Emoji, please check it on your phone]')
-        return efb_msg
+        return [efb_msg]
 
-    def qq_small_face_wrapper(self, data, merged_msg_id) -> EFBMsg:
+    def qq_small_face_wrapper(self, data, merged_msg_id):
         # todo this function's maybe not necessary?
         pass
 
-    def qq_sign_wrapper(self, data) -> EFBMsg:
+    def qq_sign_wrapper(self, data):
         location = self._('at {}').format(data['location']) if 'location' in data else self._('at Unknown Place')
         title = '' if 'title' not in data else (self._('with title {}').format(data['title']))
         efb_msg = EFBMsg()
         efb_msg.type = MsgType.Text
         efb_msg.text = self._('signed in {location} {title}').format(title=title,
                                                                      location=location)
-        return efb_msg
+        return [efb_msg]
 
     def qq_rich_wrapper(self, data: dict):  # Buggy, Help needed
         efb_messages = list()
@@ -152,7 +152,7 @@ class QQMsgProcessor:
 
         return efb_messages
 
-    def qq_music_wrapper(self, data) -> EFBMsg:
+    def qq_music_wrapper(self, data):
         efb_msg = EFBMsg()
         if data['type'] == '163':  # Netease Cloud Music
             efb_msg.type = MsgType.Text
@@ -160,8 +160,7 @@ class QQMsgProcessor:
         else:
             efb_msg.type = MsgType.Text
             efb_msg.text = data['text']
-        return efb_msg  # todo Port for other music platform
-        pass
+        return [efb_msg]  # todo Port for other music platform
 
     def qq_text_simple_wrapper(self, text: str, ats: dict):  # This cute function only accepts string!
         efb_msg = EFBMsg()
@@ -183,7 +182,7 @@ class QQMsgProcessor:
         # there's no need to escape the special characters
         return '[CQ:image,file=base64://{}]'.format(encoded_string.decode())
 
-    def qq_file_after_wrapper(self, data) -> EFBMsg:
+    def qq_file_after_wrapper(self, data):
         efb_msg = EFBMsg()
         efb_msg.file = data['file']
         efb_msg.type = MsgType.File
@@ -193,7 +192,7 @@ class QQMsgProcessor:
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
         efb_msg.filename = quote(data['filename'])
-        return efb_msg
+        return [efb_msg]
 
     def qq_group_broadcast_wrapper(self, data):
         try:
