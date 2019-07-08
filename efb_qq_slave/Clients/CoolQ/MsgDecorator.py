@@ -212,10 +212,11 @@ class QQMsgProcessor:
                 text += ' @all '
             at_list[(substitution_begin, substitution_end)] = EFBChat(self.inst.channel).self()
 
-            if 'pic' in data['mannounce']:  # Picture Attached
+            if 'pic' in content_data['mannounce']:  # Picture Attached
                 # Assuming there's only one picture
-                data['url'] = "http://gdynamic.qpic.cn/gdynamic/{}/628".format(data['mannounce']['pic'][0]['url'])
-                efb_message = self.qq_image_wrapper(data)
+                data['url'] = "http://gdynamic.qpic.cn/gdynamic/{}/628".format(
+                    content_data['mannounce']['pic'][0]['url'])
+                efb_message = self.qq_image_wrapper(data)[0]
                 efb_message.text = text
                 efb_message.substitutions = EFBMsgSubstitutions(at_list)
                 return efb_message
@@ -249,7 +250,7 @@ class QQMsgProcessor:
             if 'pics' in html.unescape(notice_data[0]['msg']):  # Picture Attached
                 # Assuming there's only one picture
                 data['url'] = "http://gdynamic.qpic.cn/gdynamic/{}/628".format(notice_data[0]['msg']['pics'][0]['id'])
-                efb_message = self.qq_image_wrapper(data)
+                efb_message = self.qq_image_wrapper(data)[0]
                 efb_message.text = text
                 efb_message.substitutions = EFBMsgSubstitutions(at_list)
                 return efb_message
