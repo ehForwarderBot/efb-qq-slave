@@ -4,6 +4,7 @@ import tempfile
 import threading
 import time
 import uuid
+import requests
 from typing import IO, Any, Dict, Optional, List, Tuple
 
 import cqhttp
@@ -23,7 +24,8 @@ from .Exceptions import CoolQDisconnectedException, CoolQAPIFailureException, Co
     CoolQUnknownException
 from .MsgDecorator import QQMsgProcessor
 from .Utils import qq_emoji_list, async_send_messages_to_master, process_quote_text, coolq_text_encode, \
-    upload_image_smms, download_file_from_qzone, download_user_avatar, download_group_avatar
+    upload_image_smms, download_file_from_qzone, download_user_avatar, download_group_avatar, \
+    get_friend_list_via_qq_show
 from ..BaseClient import BaseClient
 from ... import QQMessengerChannel
 
@@ -576,7 +578,11 @@ class CoolQ(BaseClient):
 
     def update_friend_list(self):
         # Warning: Experimental API
-        self.friend_list = self.coolq_api_query('_get_friend_list')
+        # self.friend_list = self.coolq_api_query('_get_friend_list')
+        try:
+            self.friend_list = get_friend_list_via_qq_show(self.coolq_api_query('get_credentials'))
+        except Exception:
+            self.logger.warning('Failed to update friend list')
         if self.friend_list:
             self.logger.debug('Update friend list completed. Entries: %s', len(self.friend_list))
         else:
@@ -618,6 +624,14 @@ class CoolQ(BaseClient):
                 self.deliver_alert_to_master(self._('Failed to obtain friend remark name'))
                 return ''
         for i in range(len(self.friend_list)):  # friend group
+            for j in range(len(self.friend_list[i]['friend'])):
+                current_user = self.friend_list[i]['friend'][j]
+                if current_user['uin'] != uid:
+                    continue
+                return current_user['name']
+        return None  # I don't think you've got such a friend
+        '''
+        for i in range(len(self.friend_list)):  # friend group
             for j in range(len(self.friend_list[i]['friends'])):
                 current_user = self.friend_list[i]['friends'][j]
                 if current_user['user_id'] != uid:
@@ -628,6 +642,8 @@ class CoolQ(BaseClient):
                 else:
                     return current_user['remark']
         return None  # I don't think you've got such a friend
+        '''
+
 
     def send_efb_group_notice(self, context):
         context['message_type'] = 'group'

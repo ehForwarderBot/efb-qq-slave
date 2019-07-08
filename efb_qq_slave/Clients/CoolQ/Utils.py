@@ -304,3 +304,13 @@ def download_group_avatar(uid: str):
         raise EOFError('File downloaded is Empty')
     file.seek(0)
     return file
+
+
+def get_friend_list_via_qq_show(cookie: str):
+    # This function won't check before execute, instead all the exceptions will be thrown
+    cookie_arr = param_spliter(cookie)
+    url = "http://show.qq.com/cgi-bin/qqshow_user_friendgroup?g_tk={csrf_token}&omode=4" \
+        .format(csrf_token=cookie_arr['csrf_token'])
+    ret = requests.get(url, cookies=cookie_arr)
+    data = json.loads(ret)
+    return data['data']['group']
