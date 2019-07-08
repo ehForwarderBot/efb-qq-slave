@@ -643,7 +643,7 @@ class CoolQ(BaseClient):
         for i in range(len(self.friend_list)):  # friend group
             for j in range(len(self.friend_list[i]['friend'])):
                 current_user = self.friend_list[i]['friend'][j]
-                if current_user['uin'] != uid:
+                if current_user['uin'] != str(uid):
                     continue
                 return current_user['name']
         return None  # I don't think you've got such a friend
