@@ -282,7 +282,7 @@ class CoolQ(BaseClient):
 
         # threading.Thread(target=self.check_running_status).start()
         self.check_status_periodically(threading.Event())
-
+        self.check_self_update(threading.Event())
         threading.Timer(1800, self.update_contacts_periodically, [threading.Event()]).start()
 
     def run_instance(self, *args, **kwargs):
@@ -785,3 +785,15 @@ class CoolQ(BaseClient):
             context = {'message_type': 'discuss', 'discuss_id': discuss_id}
             return self.chat_manager.build_efb_chat_as_group(context)
         raise EFBChatNotFound()
+
+    def check_self_update(self, t_event):
+        interval = 60 * 60 * 24
+        latest_version = self.channel.check_updates()
+        if latest_version is not None:
+            self.deliver_alert_to_master("New version({version}) of EFB-QQ-Slave has released! "
+                                         "Please manually update EQS by stopping ehForwarderbot first and then execute "
+                                         "<code>pip3 install --upgrade efb-qq-slave</code>"
+                                         .format(version=latest_version))
+        else:
+            if t_event is not None and not t_event.is_set():
+                threading.Timer(interval, self.check_self_update, [t_event]).start()

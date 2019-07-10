@@ -1,8 +1,12 @@
 # coding: utf-8
 import logging
 import os
+import requests
 from typing import Optional, Dict, Any
 import yaml
+import json
+from pkg_resources import parse_version
+
 from gettext import translation
 from ehforwarderbot import EFBChannel, ChannelType, EFBMsg, EFBStatus, EFBChat, MsgType
 from ehforwarderbot import utils as efb_utils
@@ -37,6 +41,20 @@ class QQMessengerChannel(EFBChannel):
         Load Config
         """
         self.load_config()
+
+    def check_updates(self):
+        try:
+            data = requests.get("https://pypi.org/pypi/efb-qq-slave/json")
+            data_json = json.loads(data.text)
+            latest_version = data_json['info']['version']
+            self.logger.debug("The latest version is {version}".format(version=latest_version))
+            if parse_version(self.__version__) < parse_version(latest_version):
+                return latest_version
+            else:
+                return None
+        except Exception:
+            self.logger.warning("Failed to check updates")
+            return None
 
     def load_config(self):
         """
