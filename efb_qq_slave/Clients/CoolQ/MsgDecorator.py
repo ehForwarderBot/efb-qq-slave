@@ -192,7 +192,7 @@ class QQMsgProcessor:
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
         efb_msg.filename = quote(data['filename'])
-        return [efb_msg]
+        return efb_msg
 
     def qq_group_broadcast_wrapper(self, data):
         try:
