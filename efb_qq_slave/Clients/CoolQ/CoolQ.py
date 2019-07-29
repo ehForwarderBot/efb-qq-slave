@@ -25,7 +25,7 @@ from .Exceptions import CoolQDisconnectedException, CoolQAPIFailureException, Co
 from .MsgDecorator import QQMsgProcessor
 from .Utils import qq_emoji_list, async_send_messages_to_master, process_quote_text, coolq_text_encode, \
     upload_image_smms, download_file_from_qzone, download_user_avatar, download_group_avatar, \
-    get_friend_list_via_qq_show, upload_image_vim_cn
+    get_friend_list_via_qq_show, upload_image_vim_cn, upload_image_mi, upload_image_sogou
 from ..BaseClient import BaseClient
 from ... import QQMessengerChannel
 
@@ -461,6 +461,32 @@ class CoolQ(BaseClient):
                     else:
                         if vim_cn_data is not None:
                             text = text.format(vim_cn_data)
+                elif 'upload_to_mi' in self.client_config['air_option'] \
+                        and self.client_config['air_option']['upload_to_mi']:
+                    text = '[Image] {}'
+                    mi_data = None
+                    try:
+                        mi_data = upload_image_mi(msg.file, msg.path)
+                    except CoolQUnknownException as e:
+                        text = '[Image]'
+                        self.deliver_alert_to_master(self._('Failed to upload the image to mi.com! Return Msg: ')
+                                                     + getattr(e, 'message', repr(e)))
+                    else:
+                        if mi_data is not None:
+                            text = text.format(mi_data)
+                elif 'upload_to_sogou' in self.client_config['air_option'] \
+                        and self.client_config['air_option']['upload_to_sogou']:
+                    text = '[Image] {}'
+                    sogou_data = None
+                    try:
+                        sogou_data = upload_image_sogou(msg.file, msg.path)
+                    except CoolQUnknownException as e:
+                        text = '[Image]'
+                        self.deliver_alert_to_master(self._('Failed to upload the image to sogou.com! Return Msg: ')
+                                                     + getattr(e, 'message', repr(e)))
+                    else:
+                        if sogou_data is not None:
+                            text = text.format(sogou_data)
                 else:
                     text = '[Image]'
             else:
