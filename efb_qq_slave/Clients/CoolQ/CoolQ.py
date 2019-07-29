@@ -25,7 +25,7 @@ from .Exceptions import CoolQDisconnectedException, CoolQAPIFailureException, Co
 from .MsgDecorator import QQMsgProcessor
 from .Utils import qq_emoji_list, async_send_messages_to_master, process_quote_text, coolq_text_encode, \
     upload_image_smms, download_file_from_qzone, download_user_avatar, download_group_avatar, \
-    get_friend_list_via_qq_show
+    get_friend_list_via_qq_show, upload_image_vim_cn
 from ..BaseClient import BaseClient
 from ... import QQMessengerChannel
 
@@ -448,6 +448,19 @@ class CoolQ(BaseClient):
                     else:
                         if smms_data is not None:
                             text = text.format(smms_data['url'])
+                elif 'upload_to_vim_cn' in self.client_config['air_option'] \
+                        and self.client_config['air_option']['upload_to_vim_cn']:
+                    text = '[Image] {}'
+                    vim_cn_data = None
+                    try:
+                        vim_cn_data = upload_image_vim_cn(msg.file, msg.path)
+                    except CoolQUnknownException as e:
+                        text = '[Image]'
+                        self.deliver_alert_to_master(self._('Failed to upload the image to vim-cn.com! Return Msg: ')
+                                                     + getattr(e, 'message', repr(e)))
+                    else:
+                        if vim_cn_data is not None:
+                            text = text.format(vim_cn_data)
                 else:
                     text = '[Image]'
             else:
@@ -660,7 +673,6 @@ class CoolQ(BaseClient):
                     return current_user['remark']
         return None  # I don't think you've got such a friend
         '''
-
 
     def send_efb_group_notice(self, context):
         context['message_type'] = 'group'

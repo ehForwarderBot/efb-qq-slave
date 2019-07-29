@@ -224,6 +224,16 @@ def upload_image_smms(file, path):  # Upload image to sm.ms and return the link
             raise CoolQUnknownException(status['msg'])
 
 
+def upload_image_vim_cn(file, path):  # Upload image to img.vim-cn.com and return the link
+    UPLOAD_URL = 'https://img.vim-cn.com/'
+    with open(path, 'rb') as f:
+        files = {'name': f.read()}
+        resp = requests.post(UPLOAD_URL, files=files)
+        if resp.status_code != 200:
+            raise CoolQUnknownException("Failed to upload images to vim-cn.com")
+        return resp.text
+
+
 def param_spliter(str_param):
     params = str_param.split(";")
     param = {}
