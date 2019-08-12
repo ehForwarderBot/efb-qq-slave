@@ -312,7 +312,7 @@ def download_file_from_qzone(cookie: str, csrf_token: str, uin, group_id, file_i
 
 def download_user_avatar(uid: str):
     file = tempfile.NamedTemporaryFile()
-    url = "http://q1.qlogo.cn/g?b=qq&nk={}&s=640".format(uid)
+    url = "https://q1.qlogo.cn/g?b=qq&nk={}&s=0".format(uid)
     try:
         opener = urllib.request.build_opener()
         urllib.request.install_opener(opener)
@@ -328,7 +328,7 @@ def download_user_avatar(uid: str):
 
 def download_group_avatar(uid: str):
     file = tempfile.NamedTemporaryFile()
-    url = "http://p.qlogo.cn/gh/{}/{}/640/".format(uid, uid)
+    url = "https://p.qlogo.cn/gh/{}/{}/".format(uid, uid)
     try:
         opener = urllib.request.build_opener()
         urllib.request.install_opener(opener)
