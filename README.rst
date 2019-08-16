@@ -2,8 +2,19 @@
 EFB QQ Slave Channel
 ########################################################################
 
+.. image:: https://img.shields.io/badge/Python->%3D%203.6-blue.svg
+   :alt: Python >= 3.6
+   :target: https://www.python.org/
+.. image:: https://img.shields.io/pypi/v/efb-qq-slave.svg
+   :alt: PyPI release
+   :target: https://pypi.org/project/efb-qq-slave/
+.. image:: https://img.shields.io/pypi/dm/efb-qq-slave.svg
+   :alt: Downloads per month
+   :target: https://pypi.org/project/efb-qq-slave/
+
 .. figure:: https://i.imgur.com/KHhlL6c.png
    :alt: This project proudly supports #SayNoToQQ campaign.
+
 
 **Channel ID**: ``milkice.qq``
 
