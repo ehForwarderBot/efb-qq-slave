@@ -49,6 +49,7 @@ class CoolQ(BaseClient):
     friend_list = []
     group_list = []
     discuss_list = []
+    extra_group_list = []
     repeat_counter = 0
     update_repeat_counter = 0
 
@@ -346,6 +347,13 @@ class CoolQ(BaseClient):
                        'group_id': res[i]['group_id']}
             efb_chat = self.chat_manager.build_efb_chat_as_group(context)
             groups.append(efb_chat)
+        for i in range(len(self.extra_group_list)):
+            if self.extra_group_list[i]['group_id'] in res:
+                continue
+            context = {'message_type': 'group',
+                       'group_id': self.extra_group_list[i]['group_id']}
+            efb_chat = self.chat_manager.build_efb_chat_as_group(context)
+            groups.append(efb_chat)
         return groups + self.discuss_list
 
     def get_friends(self) -> List:
@@ -537,7 +545,14 @@ class CoolQ(BaseClient):
         for i in range(len(res)):
             if res[i]['group_id'] == group_id:
                 return res[i]
-        return None
+        try:
+            external_group = self.get_external_group_info(group_id)
+        except Exception:
+            return None
+        else:
+            new_group = {'group_id': group_id, 'group_name': external_group['group_name']}
+            self.extra_group_list.append(new_group)
+            return new_group
 
     def coolq_send_message(self, msg_type, uid, message):
         keyword = msg_type if msg_type != 'private' else 'user'
