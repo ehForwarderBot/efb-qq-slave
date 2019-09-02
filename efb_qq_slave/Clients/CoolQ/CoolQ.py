@@ -551,8 +551,10 @@ class CoolQ(BaseClient):
             return None
         else:
             new_group = {'group_id': group_id, 'group_name': external_group['group_name']}
-            if group_id not in self.extra_group_list:
-                self.extra_group_list.append(new_group)
+            for i in range(len(self.extra_group_list)):
+                if str(self.extra_group_list[i]['group_id']) == str(group_id):
+                    return new_group
+            self.extra_group_list.append(new_group)
             return new_group
 
     def coolq_send_message(self, msg_type, uid, message):
