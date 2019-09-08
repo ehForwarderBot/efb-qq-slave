@@ -26,7 +26,7 @@ class QQMessengerChannel(EFBChannel):
     __version__ = version.__version__
 
     supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image,
-                               MsgType.Link, MsgType.Audio}
+                               MsgType.Link, MsgType.Audio, MsgType.Animation}
 
     # todo supported_message can be dynamically defined by Client
 

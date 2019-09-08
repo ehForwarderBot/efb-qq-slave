@@ -71,6 +71,8 @@ class QQMsgProcessor:
             mime = mime.decode()
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
+        if "gif" in mime:
+            efb_msg.type = MsgType.Animation
         return [efb_msg]
 
     def qq_record_wrapper(self, data):
