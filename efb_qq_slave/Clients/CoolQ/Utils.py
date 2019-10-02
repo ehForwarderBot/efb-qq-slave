@@ -352,9 +352,9 @@ def get_friend_list_via_qq_show(cookie: str, csrf_token: str):
     return data['data']['group']
 
 
-def download_voice(filename: str, api_root: str):
+def download_voice(filename: str, api_root: str, access_token: str):
     file = tempfile.NamedTemporaryFile()
-    url = '{url}/data/record/{file}'.format(url=api_root, file=filename)
+    url = '{url}/data/record/{file}?access_token={at}'.format(url=api_root, file=filename, at=access_token)
     try:
         opener = urllib.request.build_opener()
         urllib.request.install_opener(opener)
