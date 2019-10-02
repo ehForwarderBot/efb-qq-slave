@@ -14,7 +14,7 @@ from ehforwarderbot import EFBMsg, MsgType, EFBChat, coordinator
 from ehforwarderbot.message import EFBMsgLocationAttribute, EFBMsgCommands, EFBMsgCommand, EFBMsgSubstitutions, \
     EFBMsgLinkAttribute
 
-from .Utils import cq_get_image, coolq_para_encode
+from .Utils import cq_get_image, coolq_para_encode, download_voice
 from . import CoolQ
 
 
@@ -75,8 +75,18 @@ class QQMsgProcessor:
 
     def qq_record_wrapper(self, data):
         efb_msg = EFBMsg()
-        efb_msg.type = MsgType.Unsupported
-        efb_msg.text = self._('[Voice Message] Please check it on your QQ')
+        try:
+            self.inst.coolq_api_query("get_record", file=data['file'], out_format='mp3')
+            efb_msg.type = MsgType.Audio
+            efb_msg.file = download_voice(data['file'], self.inst.client_config['api_root'])
+            mime = magic.from_file(efb_msg.file.name, mime=True)
+            if isinstance(mime, bytes):
+                mime = mime.decode()
+            efb_msg.path = efb_msg.file.name
+            efb_msg.mime = mime
+        except Exception:
+            efb_msg.type = MsgType.Unsupported
+            efb_msg.text = self._('[Voice Message] Please check it on your QQ')
         return [efb_msg]
 
     def qq_share_wrapper(self, data):

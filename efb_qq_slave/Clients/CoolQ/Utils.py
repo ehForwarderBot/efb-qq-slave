@@ -350,3 +350,19 @@ def get_friend_list_via_qq_show(cookie: str, csrf_token: str):
     ret = requests.get(url, cookies=cookie_arr)
     data = json.loads(ret.text)
     return data['data']['group']
+
+
+def download_voice(filename: str, api_root: str):
+    file = tempfile.NamedTemporaryFile()
+    url = '{url}/data/record/{file}'.format(url=api_root, file=filename)
+    try:
+        opener = urllib.request.build_opener()
+        urllib.request.install_opener(opener)
+        urllib.request.urlretrieve(url, file.name)
+    except (URLError, HTTPError, ContentTooShortError) as e:
+        logging.getLogger(__name__).warning("Error occurs when downloading files: " + str(e))
+        return _("Error occurs when downloading files: ") + str(e)
+    if file.seek(0, 2) <= 0:
+        raise EOFError('File downloaded is Empty')
+    file.seek(0)
+    return file
