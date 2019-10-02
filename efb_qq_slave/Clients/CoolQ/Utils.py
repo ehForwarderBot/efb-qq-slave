@@ -354,9 +354,11 @@ def get_friend_list_via_qq_show(cookie: str, csrf_token: str):
 
 def download_voice(filename: str, api_root: str, access_token: str):
     file = tempfile.NamedTemporaryFile()
-    url = '{url}/data/record/{file}?access_token={at}'.format(url=api_root, file=filename, at=access_token)
+    url = '{url}/data/record/{file}'.format(url=api_root, file=filename)
     try:
         opener = urllib.request.build_opener()
+        opener.addheaders = [("Authorization", "Bearer {at}".format(at=access_token))]
+
         urllib.request.install_opener(opener)
         urllib.request.urlretrieve(url, file.name)
     except (URLError, HTTPError, ContentTooShortError) as e:
