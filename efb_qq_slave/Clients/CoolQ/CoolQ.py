@@ -440,8 +440,8 @@ class CoolQ(BaseClient):
                 msg.text = "%s%s\n\n%s" % (tgt_alias, tgt_text, coolq_text_encode(msg.text))
             msg.uid = self.coolq_send_message(chat_type[0], chat_type[1], msg.text)
             self.logger.debug('[%s] Sent as a text message. %s', msg.uid, msg.text)
-        elif msg.type in (MsgType.Image, MsgType.Sticker):
-            self.logger.info("[%s] Image/Sticker %s", msg.uid, msg.type)
+        elif msg.type in (MsgType.Image, MsgType.Sticker, MsgType.Animation):
+            self.logger.info("[%s] Image/Sticker/Animation %s", msg.uid, msg.type)
             text = ''
             if not self.client_config['is_pro']:  # CoolQ Air
                 if self.client_config['air_option']['upload_to_smms']:
