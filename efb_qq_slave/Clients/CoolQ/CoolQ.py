@@ -279,6 +279,49 @@ class CoolQ(BaseClient):
             context['commands'] = commands
             self.send_msg_to_master(context)
 
+        @self.coolq_bot.on_request('group')
+        def handle_group_request(context):
+            self.logger.debug(repr(context))
+            context['group_name'] = self.get_group_info(context['group_id'])['group_name']
+            context['group_id_orig'] = context['group_id']
+            context['group_id'] = str(context['group_id']) + "_notification"
+            context['message_type'] = 'group'
+            context['event_description'] = '\u2139 New Group Join Request'
+            original_group = self.get_group_info(context['group_id'], False)
+            group_name = context['group_id']
+            if original_group is not None and 'group_name' in original_group:
+                group_name = original_group['group_name']
+            msg = EFBMsg()
+            msg.uid = 'group' + '_' + str(context['group_id'])
+            msg.author = self.chat_manager.build_efb_chat_as_system_user(context)
+            msg.chat = self.chat_manager.build_efb_chat_as_group(context)
+            msg.deliver_to = coordinator.master
+            msg.type = MsgType.Text
+            name = ""
+            if not self.get_friend_remark(context['user_id']):
+                name = "{}({})[{}] ".format(
+                    self.get_stranger_info(context['user_id'])['nickname'], self.get_friend_remark(context['user_id']),
+                    context['user_id'])
+            else:
+                name = "{}[{}] ".format(self.get_stranger_info(context['user_id'])['nickname'], context['user_id'])
+            msg.text = "{} wants to join the group {}({}). \nHere is the comment: {}".format(
+                name, group_name, context['group_id_orig'], context['comment']
+            )
+            msg.commands = EFBMsgCommands([EFBMsgCommand(
+                name=self._("Accept"),
+                callable_name="process_group_request",
+                kwargs={'result': 'accept',
+                        'flag': context['flag'],
+                        'sub_type': context['sub_type']}
+            ), EFBMsgCommand(
+                name=self._("Decline"),
+                callable_name="process_group_request",
+                kwargs={'result': 'decline',
+                        'flag': context['flag'],
+                        'sub_type': context['sub_type']}
+            )])
+            coordinator.send_message(msg)
+
         self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
 
         # threading.Thread(target=self.check_running_status).start()
@@ -348,7 +391,12 @@ class CoolQ(BaseClient):
             efb_chat = self.chat_manager.build_efb_chat_as_group(context)
             groups.append(efb_chat)
         for i in range(len(self.extra_group_list)):
-            if self.extra_group_list[i]['group_id'] in res:
+            does_exist = False
+            for j in range(len(res)):
+                if str(self.extra_group_list[i]['group_id']) == str(res[i]['group_id']):
+                    does_exist = True
+                    break
+            if does_exist:
                 continue
             context = {'message_type': 'group',
                        'group_id': self.extra_group_list[i]['group_id']}
@@ -429,6 +477,12 @@ class CoolQ(BaseClient):
 
         if msg.type in [MsgType.Text, MsgType.Link]:
             if isinstance(msg.target, EFBMsg):
+                if msg.text.startswith("kick`"):
+                    group_id = msg.uid.split('_')[1]
+                    user_id = msg.target.author.chat_uid.split('_')[1]
+                    self.coolq_api_query("set_group_kick",
+                                         group_id=group_id,
+                                         user_id=user_id)
                 max_length = 50
                 tgt_text = coolq_text_encode(process_quote_text(msg.target.text, max_length))
                 user_type = msg.target.author.chat_uid.split('_')
@@ -785,6 +839,18 @@ class CoolQ(BaseClient):
             self.coolq_api_query('set_friend_add_request',
                                  approve=res,
                                  flag=flag)
+        except CoolQAPIFailureException as e:
+            return (self._('Failed to process request! Error Message:\n')
+                    + getattr(e, 'message', repr(e)))
+        return 'Done'
+
+    def process_group_request(self, result, flag, sub_type):
+        res = 'true' if result == 'accept' else 'false'
+        try:
+            self.coolq_api_query('set_group_add_request',
+                                 approve=res,
+                                 flag=flag,
+                                 sub_type=sub_type)
         except CoolQAPIFailureException as e:
             return (self._('Failed to process request! Error Message:\n')
                     + getattr(e, 'message', repr(e)))
