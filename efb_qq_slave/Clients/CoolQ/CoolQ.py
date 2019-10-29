@@ -282,7 +282,7 @@ class CoolQ(BaseClient):
         @self.coolq_bot.on_request('group')
         def handle_group_request(context):
             self.logger.debug(repr(context))
-            context['group_name'] = _('[Request]') + self.get_group_info(context['group_id'])['group_name']
+            context['group_name'] = self._('[Request]') + self.get_group_info(context['group_id'])['group_name']
             context['group_id_orig'] = context['group_id']
             context['group_id'] = str(context['group_id']) + "_notification"
             context['message_type'] = 'group'
