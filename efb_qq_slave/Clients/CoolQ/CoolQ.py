@@ -476,14 +476,14 @@ class CoolQ(BaseClient):
                                                           "This message may have already expired."))
 
         if msg.type in [MsgType.Text, MsgType.Link]:
-            if isinstance(msg.target, EFBMsg):
-                if msg.text == "kick`":
-                    group_id = chat_type[1]
-                    user_id = msg.target.author.chat_uid.split('_')[1]
-                    self.coolq_api_query("set_group_kick",
-                                         group_id=group_id,
-                                         user_id=user_id)
-                else:
+            if msg.text == "kick`":
+                group_id = chat_type[1]
+                user_id = msg.target.author.chat_uid.split('_')[1]
+                self.coolq_api_query("set_group_kick",
+                                     group_id=group_id,
+                                     user_id=user_id)
+            else:
+                if isinstance(msg.target, EFBMsg):
                     max_length = 50
                     tgt_text = coolq_text_encode(process_quote_text(msg.target.text, max_length))
                     user_type = msg.target.author.chat_uid.split('_')
@@ -493,8 +493,8 @@ class CoolQ(BaseClient):
                     else:
                         tgt_alias = ""
                     msg.text = "%s%s\n\n%s" % (tgt_alias, tgt_text, coolq_text_encode(msg.text))
-                    msg.uid = self.coolq_send_message(chat_type[0], chat_type[1], msg.text)
-                    self.logger.debug('[%s] Sent as a text message. %s', msg.uid, msg.text)
+                msg.uid = self.coolq_send_message(chat_type[0], chat_type[1], msg.text)
+                self.logger.debug('[%s] Sent as a text message. %s', msg.uid, msg.text)
         elif msg.type in (MsgType.Image, MsgType.Sticker, MsgType.Animation):
             self.logger.info("[%s] Image/Sticker/Animation %s", msg.uid, msg.type)
             text = ''
