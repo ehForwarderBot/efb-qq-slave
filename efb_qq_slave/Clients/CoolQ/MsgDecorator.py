@@ -69,6 +69,7 @@ class QQMsgProcessor:
         mime = magic.from_file(efb_msg.file.name, mime=True)
         if isinstance(mime, bytes):
             mime = mime.decode()
+        efb_msg.filename = efb_msg.file.name
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
         if "gif" in mime:
