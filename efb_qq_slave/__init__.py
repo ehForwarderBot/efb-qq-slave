@@ -41,6 +41,7 @@ class QQMessengerChannel(EFBChannel):
         Load Config
         """
         self.load_config()
+        self.init_client_manager()
 
     def check_updates(self):
         try:
@@ -78,7 +79,7 @@ class QQMessengerChannel(EFBChannel):
         """
         # not sure how it works
         # todo Help Needed
-        self.init_client_manager()
+        # self.init_client_manager()
         pass
 
     def send_message(self, msg: 'EFBMsg'):
