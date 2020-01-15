@@ -101,7 +101,9 @@ class CoolQ(BaseClient):
                         member_info = self.coolq_api_query('get_group_member_info',
                                                            group_id=g_id,
                                                            user_id=msg_data['qq'])
-                        group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
+                        group_card = ""
+                        if member_info:
+                            group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
                     self.logger.debug('Group card: {}'.format(group_card))
                     substitution_begin = 0
                     substitution_end = 0
@@ -597,6 +599,9 @@ class CoolQ(BaseClient):
         if no_cache or not self.group_list:
             self.group_list = self.coolq_api_query('get_group_list')
         res = self.group_list
+        if not res:
+            self.deliver_alert_to_master(self._("Failed the get group detail"))
+            return None
         # res = self.coolq_bot.get_group_list()
         for i in range(len(res)):
             if res[i]['group_id'] == group_id:

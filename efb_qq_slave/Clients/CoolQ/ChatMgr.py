@@ -74,7 +74,9 @@ class ChatManager:
         chat_name = ''
         if 'nickname' not in context:
             i: dict = self.channel.QQClient.get_stranger_info(uid)
-            chat_name = i['nickname']
+            chat_name = ""
+            if i:
+                chat_name = i['nickname']
         else:
             chat_name = context['nickname']
         efb_chat.chat_name = chat_name
