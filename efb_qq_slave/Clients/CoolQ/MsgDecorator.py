@@ -57,13 +57,13 @@ class QQMsgProcessor:
         if 'url' not in data:
             efb_msg.type = MsgType.Text
             efb_msg.text = self._('[Image Source missing]')
-            return efb_msg
+            return [efb_msg]
 
         efb_msg.file = cq_get_image(data['url'])
         if efb_msg.file is None:
             efb_msg.type = MsgType.Text
             efb_msg.text = self._('[Download image failed, please check on your QQ client]')
-            return efb_msg
+            return [efb_msg]
 
         efb_msg.type = MsgType.Image
         mime = magic.from_file(efb_msg.file.name, mime=True)
@@ -157,7 +157,7 @@ class QQMsgProcessor:
         efb_msg.type = MsgType.Unsupported
         efb_msg.text = self._('[Here comes the Rich Text, dumping...] \n')
         for key, value in data.items():
-            efb_msg.text += key + ':' + value + '\n'
+            efb_msg.text += key + ': ' + value + '\n'
         efb_messages.append(efb_msg)
         # Optimizations for rich messages
         # Group Broadcast
@@ -184,7 +184,7 @@ class QQMsgProcessor:
         if ats:  # This is used to replace specific text with @blahblah
             # And Milkice really requires a brain check
             efb_msg.substitutions = EFBMsgSubstitutions(ats)
-        return efb_msg
+        return [efb_msg]
 
     def coolq_code_at_wrapper(self, uid):
         return '[CQ:at,qq={}]'.format(uid)
@@ -207,7 +207,7 @@ class QQMsgProcessor:
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
         efb_msg.filename = quote(data['filename'])
-        return efb_msg
+        return [efb_msg]
 
     def qq_group_broadcast_wrapper(self, data):
         try:
@@ -234,7 +234,7 @@ class QQMsgProcessor:
                 efb_message = self.qq_image_wrapper(data)[0]
                 efb_message.text = text
                 efb_message.substitutions = EFBMsgSubstitutions(at_list)
-                return efb_message
+                return [efb_message]
             else:
                 return self.qq_text_simple_wrapper(text, at_list)
         except Exception:
@@ -268,7 +268,7 @@ class QQMsgProcessor:
                 efb_message = self.qq_image_wrapper(data)[0]
                 efb_message.text = text
                 efb_message.substitutions = EFBMsgSubstitutions(at_list)
-                return efb_message
+                return [efb_message]
             else:
                 return self.qq_text_simple_wrapper(text, at_list)
         except Exception:
