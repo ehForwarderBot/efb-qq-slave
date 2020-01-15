@@ -7,6 +7,7 @@ import ntpath
 import tempfile
 import urllib.request
 from gettext import translation
+from typing import *
 from urllib.error import URLError, HTTPError, ContentTooShortError
 from urllib.parse import quote
 
@@ -342,14 +343,20 @@ def download_group_avatar(uid: str):
     return file
 
 
-def get_friend_list_via_qq_show(cookie: str, csrf_token: str):
+def get_friend_group_via_qq_show(cookie: str, csrf_token: str) -> Dict[str, str]:
     # This function won't check before execute, instead all the exceptions will be thrown
     cookie_arr = param_spliter(cookie)
     url = "http://show.qq.com/cgi-bin/qqshow_user_friendgroup?g_tk={csrf_token}&omode=4" \
         .format(csrf_token=csrf_token)
     ret = requests.get(url, cookies=cookie_arr)
     data = json.loads(ret.text)
-    return data['data']['group']
+    friend_group = {}
+    for i in range(len(data['data']['group'])):  # friend group
+        for j in range(len(data['data']['group'][i]['friend'])):
+            current_user = data['data']['group'][i]['friend'][j]
+            current_group = data['data']['group'][i]['name']
+            friend_group[current_user] = current_group
+    return friend_group
 
 
 def download_voice(filename: str, api_root: str, access_token: str):

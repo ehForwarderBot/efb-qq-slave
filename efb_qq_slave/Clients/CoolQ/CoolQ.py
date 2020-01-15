@@ -25,7 +25,7 @@ from .Exceptions import CoolQDisconnectedException, CoolQAPIFailureException, Co
 from .MsgDecorator import QQMsgProcessor
 from .Utils import qq_emoji_list, async_send_messages_to_master, process_quote_text, coolq_text_encode, \
     upload_image_smms, download_file_from_qzone, download_user_avatar, download_group_avatar, \
-    get_friend_list_via_qq_show, upload_image_vim_cn, upload_image_mi, upload_image_sogou
+    get_friend_group_via_qq_show, upload_image_vim_cn, upload_image_mi, upload_image_sogou
 from ..BaseClient import BaseClient
 from ... import QQMessengerChannel
 
@@ -47,6 +47,7 @@ class CoolQ(BaseClient):
     ngettext = translator.ngettext
 
     friend_list = []
+    friend_group = {}
     group_list = []
     discuss_list = []
     extra_group_list = []
@@ -704,12 +705,12 @@ class CoolQ(BaseClient):
 
     def update_friend_list(self):
         # Warning: Experimental API
-        # self.friend_list = self.coolq_api_query('_get_friend_list')
+        self.friend_list = self.coolq_api_query('get_friend_list')
         try:
             cred = self.coolq_api_query('get_credentials')
             cookies = cred['cookies']
             csrf_token = cred['csrf_token']
-            self.friend_list = get_friend_list_via_qq_show(cookies, csrf_token)
+            self.friend_group = get_friend_group_via_qq_show(cookies, csrf_token)
         except Exception:
             self.logger.warning('Failed to update friend list')
         if self.friend_list:
@@ -750,15 +751,24 @@ class CoolQ(BaseClient):
             try:
                 self.update_friend_list()
             except CoolQAPIFailureException:
-                self.deliver_alert_to_master(self._('Failed to obtain friend remark name'))
+                self.deliver_alert_to_master(self._('Failed to update friend remark name'))
+                self.logger.exception(self._('Failed to update friend remark name'))
                 return ''
+        if not self.friend_group:
+            self.deliver_alert_to_master(self._('Failed to get friend remark name'))
+            self.logger.exception(self._('Failed to get friend remark name'))
+            return ''
+        if uid not in self.friend_group:
+            return None  # I don't think you have such a friend
+        return self.friend_group[uid]
+        '''
         for i in range(len(self.friend_list)):  # friend group
             for j in range(len(self.friend_list[i]['friend'])):
                 current_user = self.friend_list[i]['friend'][j]
                 if current_user['uin'] != str(uid):
                     continue
                 return current_user['name']
-        return None  # I don't think you've got such a friend
+        '''
         '''
         for i in range(len(self.friend_list)):  # friend group
             for j in range(len(self.friend_list[i]['friends'])):
