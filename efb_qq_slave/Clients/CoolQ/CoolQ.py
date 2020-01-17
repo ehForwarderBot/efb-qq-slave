@@ -56,7 +56,7 @@ class CoolQ(BaseClient):
     extra_group_list = []
     repeat_counter = 0
     update_repeat_counter = 0
-
+    event = threading.Event()
     host: str
     port: str
 
@@ -977,3 +977,9 @@ class CoolQ(BaseClient):
 
     def poll(self):
         self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
+        self.event = threading.Event()
+        self.event.wait()
+        self.logger.debug("EQS gracefully shut down")
+
+    def stop_polling(self):
+        self.event.set()
