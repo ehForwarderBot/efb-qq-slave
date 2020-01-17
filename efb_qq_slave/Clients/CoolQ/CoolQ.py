@@ -976,4 +976,4 @@ class CoolQ(BaseClient):
                 threading.Timer(interval, self.check_self_update, [t_event]).start()
 
     def poll(self):
-        self.coolq_bot.run(host=self.host, port=self.port, debug=False)
+        self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
