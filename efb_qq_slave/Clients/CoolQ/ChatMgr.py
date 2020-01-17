@@ -99,14 +99,14 @@ class ChatManager:
             chat_name = context['nickname']
         return chat.add_member(name=chat_name,
                                alias=None if 'alias' not in context else context['alias'],
-                               uid=member_uid)
+                               uid=str(member_uid))
 
     def build_efb_chat_as_group(self, context):  # Should be cached
         is_discuss = False if context['message_type'] == 'group' else True
         chat_uid = context['discuss_id'] if is_discuss else context['group_id']
         efb_chat = GroupChat(
             channel=self.channel,
-            uid=chat_uid
+            uid=str(chat_uid)
         )
         if not is_discuss:
             efb_chat.chat_uid = 'group' + '_' + str(chat_uid)
@@ -118,7 +118,8 @@ class ChatManager:
             efb_chat.vendor_specific = {'is_discuss': False}
             members = self.channel.QQClient.get_group_member_list(chat_uid, False)
             if members:
-                efb_chat.add_member(name=members['card'], alias=members['nickname'], uid=members['user_id'])
+                for member in members:
+                    efb_chat.add_member(name=member['card'], alias=member['nickname'], uid=member['user_id'])
         else:
             efb_chat.chat_uid = 'discuss' + '_' + str(chat_uid)
             efb_chat.chat_name = 'Discuss Group' + '_' + str(chat_uid)
@@ -134,7 +135,7 @@ class ChatManager:
         chat_name = '[Anonymous] ' + anonymous_data['name']
         return chat.add_member(name=chat_name,
                                alias=None if 'alias' not in context else context['alias'],
-                               uid=member_uid,
+                               uid=str(member_uid),
                                vendor_specific={'is_anonymous': True,
                                                 'anonymous_id': anonymous_data['id']})
 
