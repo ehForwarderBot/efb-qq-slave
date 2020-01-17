@@ -109,20 +109,20 @@ class ChatManager:
             uid=str(chat_uid)
         )
         if not is_discuss:
-            efb_chat.chat_uid = 'group' + '_' + str(chat_uid)
+            efb_chat.uid = 'group' + '_' + str(chat_uid)
             i = self.channel.QQClient.get_group_info(chat_uid)
             if i is not None:
-                efb_chat.chat_name = i['group_name'] if 'group_name' not in context else context['group_name']
+                efb_chat.name = i['group_name'] if 'group_name' not in context else context['group_name']
             else:
-                efb_chat.chat_name = chat_uid
+                efb_chat.name = chat_uid
             efb_chat.vendor_specific = {'is_discuss': False}
             members = self.channel.QQClient.get_group_member_list(chat_uid, False)
             if members:
                 for member in members:
-                    efb_chat.add_member(name=member['card'], alias=member['nickname'], uid=member['user_id'])
+                    efb_chat.add_member(name=member['card'], alias=member['nickname'], uid=str(member['user_id']))
         else:
-            efb_chat.chat_uid = 'discuss' + '_' + str(chat_uid)
-            efb_chat.chat_name = 'Discuss Group' + '_' + str(chat_uid)
+            efb_chat.uid = 'discuss' + '_' + str(chat_uid)
+            efb_chat.name = 'Discuss Group' + '_' + str(chat_uid)
             # todo Find a way to distinguish from different discuss group
             efb_chat.vendor_specific = {'is_discuss': True}
         return efb_chat
