@@ -1,7 +1,7 @@
 import importlib
 from typing import Dict
 
-from ehforwarderbot import EFBChannel
+from ehforwarderbot import Channel
 
 from .Clients.BaseClient import BaseClient
 
