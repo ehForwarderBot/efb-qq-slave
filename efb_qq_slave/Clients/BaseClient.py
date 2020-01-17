@@ -88,3 +88,6 @@ class BaseClient(ABC):
 
     def poll(self):
         raise NotImplementedError
+
+    def stop_polling(self):
+        raise NotImplementedError

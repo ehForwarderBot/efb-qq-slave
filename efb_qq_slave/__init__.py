@@ -98,6 +98,7 @@ class QQMessengerChannel(SlaveChannel):
     def stop_polling(self):
         # not sure how it works
         # todo Help Needed
+        self.QQClient.stop_polling()
         pass
 
     def get_extra_functions(self):
