@@ -421,6 +421,7 @@ class CoolQ(BaseClient):
         # Warning: Experimental API
         try:
             self.update_friend_list()  # Force update friend list
+            self.update_friend_group()
         except CoolQAPIFailureException:
             self.deliver_alert_to_master(self._('Failed to retrieve the friend list.\n'
                                                 'Only groups are shown.'))
@@ -428,19 +429,17 @@ class CoolQ(BaseClient):
         res = self.friend_list
         users = []
         for i in range(len(res)):  # friend group
-            for j in range(len(res[i]['friend'])):
-                current_user = res[i]['friend'][j]
-                txt = '[{}] {}'
-                txt = txt.format(res[i]['name'], current_user['name'])
-                # nickname = self.get_stranger_info(current_user['uin'])['nickname']
+            current_user = res[i]
+            txt = '[{}] {}'
+            txt = txt.format(self.friend_group[current_user['user_id']], current_user['nickname'])
 
-                # Disable nickname & remark comparsion for it's too time-consuming
-                context = {'user_id': str(current_user['uin']),
-                           'nickname': txt,
-                           'alias': None}
-                efb_chat = self.chat_manager.build_efb_chat_as_private(context)
-                # efb_chat = self.chat_manager.build_efb_chat_as_user(context, True)
-                users.append(efb_chat)
+            # Disable nickname & remark comparsion for it's too time-consuming
+            context = {'user_id': str(current_user['uin']),
+                       'nickname': txt,
+                       'alias': None}
+            efb_chat = self.chat_manager.build_efb_chat_as_private(context)
+            # efb_chat = self.chat_manager.build_efb_chat_as_user(context, True)
+            users.append(efb_chat)
         '''
         for i in range(len(res)):  # friend group
             for j in range(len(res[i]['friends'])):
@@ -733,16 +732,18 @@ class CoolQ(BaseClient):
         context = {'message': message, 'uid_prefix': 'alert', 'event_description': self._('CoolQ Alert')}
         self.send_msg_to_master(context)
 
-    def update_friend_list(self):
-        # Warning: Experimental API
-        self.friend_list = self.coolq_api_query('get_friend_list')
+    def update_friend_group(self):
         try:
             cred = self.coolq_api_query('get_credentials')
             cookies = cred['cookies']
             csrf_token = cred['csrf_token']
             self.friend_group = get_friend_group_via_qq_show(cookies, csrf_token)
-        except Exception:
-            self.logger.warning('Failed to update friend list')
+        except Exception as e:
+            self.logger.warning('Failed to update friend group' + str(e))
+
+    def update_friend_list(self):
+        # Warning: Experimental API
+        self.friend_list = self.coolq_api_query('get_friend_list')
         if self.friend_list:
             self.logger.debug('Update friend list completed. Entries: %s', len(self.friend_list))
         else:
@@ -785,9 +786,12 @@ class CoolQ(BaseClient):
                 self.logger.exception(self._('Failed to update friend remark name'))
                 return ''
         if not self.friend_group:
-            self.deliver_alert_to_master(self._('Failed to get friend remark name'))
-            self.logger.exception(self._('Failed to get friend remark name'))
-            return ''
+            try:
+                self.update_friend_group()
+            except CoolQAPIFailureException:
+                self.deliver_alert_to_master(self._('Failed to get friend groups'))
+                self.logger.exception(self._('Failed to get friend groups'))
+                return ''
         if uid not in self.friend_group:
             return None  # I don't think you have such a friend
         return self.friend_group[uid]
