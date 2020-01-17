@@ -7,6 +7,7 @@ import uuid
 from datetime import timedelta, datetime
 from gettext import translation
 from typing import Any, Dict, List, BinaryIO
+from multiprocessing import Process
 
 import cqhttp
 from PIL import Image
@@ -57,6 +58,7 @@ class CoolQ(BaseClient):
     repeat_counter = 0
     update_repeat_counter = 0
     event = threading.Event()
+    server: Process
     host: str
     port: str
 
@@ -347,7 +349,9 @@ class CoolQ(BaseClient):
         threading.Timer(1800, self.update_contacts_periodically, [threading.Event()]).start()
 
     def run_instance(self, *args, **kwargs):
-        threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
+        self.server = Process(target=self.coolq_bot.run, args=args, kwargs=kwargs)
+        self.server.start()
+        # threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
 
     @extra(name=_("Restart CoolQ Client"),
            desc=_("Force CoolQ to restart\n"
@@ -983,3 +987,5 @@ class CoolQ(BaseClient):
 
     def stop_polling(self):
         self.event.set()
+        self.server.terminate()
+        self.server.join()
