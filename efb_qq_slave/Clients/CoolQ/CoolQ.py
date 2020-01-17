@@ -58,7 +58,6 @@ class CoolQ(BaseClient):
     repeat_counter = 0
     update_repeat_counter = 0
     event = threading.Event()
-    server: Process
     host: str
     port: str
 
@@ -340,7 +339,7 @@ class CoolQ(BaseClient):
             )])
             coordinator.send_message(msg)
 
-        # self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
+        self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
         self.host = self.client_config['host']
         self.port = self.client_config['port']
         # threading.Thread(target=self.check_running_status).start()
@@ -349,9 +348,7 @@ class CoolQ(BaseClient):
         threading.Timer(1800, self.update_contacts_periodically, [threading.Event()]).start()
 
     def run_instance(self, *args, **kwargs):
-        self.server = Process(target=self.coolq_bot.run, args=args, kwargs=kwargs)
-        self.server.start()
-        # threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
+        threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
 
     @extra(name=_("Restart CoolQ Client"),
            desc=_("Force CoolQ to restart\n"
@@ -980,12 +977,9 @@ class CoolQ(BaseClient):
                 threading.Timer(interval, self.check_self_update, [t_event]).start()
 
     def poll(self):
-        self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
         self.event = threading.Event()
         self.event.wait()
         self.logger.debug("EQS gracefully shut down")
 
     def stop_polling(self):
         self.event.set()
-        self.server.terminate()
-        self.server.join()
