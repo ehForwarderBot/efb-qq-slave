@@ -77,8 +77,7 @@ class QQMessengerChannel(SlaveChannel):
         """
         Init ClientMgr
         """
-        # not sure how it works
-        # todo Help Needed
+        self.QQClient.poll()
         pass
 
     def send_message(self, msg: 'Message') -> 'Message':

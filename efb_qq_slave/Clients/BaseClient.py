@@ -85,3 +85,6 @@ class BaseClient(ABC):
 
     def get_group_member_list(self, group_id, no_cache=True):
         raise NotImplementedError
+
+    def poll(self):
+        raise NotImplementedError

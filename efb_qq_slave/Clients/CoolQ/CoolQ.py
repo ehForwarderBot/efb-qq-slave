@@ -57,6 +57,9 @@ class CoolQ(BaseClient):
     repeat_counter = 0
     update_repeat_counter = 0
 
+    host: str
+    port: str
+
     def __init__(self, client_id: str, config: Dict[str, Any], channel):
         super().__init__(client_id, config)
         self.client_config = config[self.client_id]
@@ -335,8 +338,9 @@ class CoolQ(BaseClient):
             )])
             coordinator.send_message(msg)
 
-        self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
-
+        # self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
+        self.host = self.client_config['host']
+        self.port = self.client_config['port']
         # threading.Thread(target=self.check_running_status).start()
         self.check_status_periodically(threading.Event())
         self.check_self_update(threading.Event())
@@ -970,3 +974,6 @@ class CoolQ(BaseClient):
         else:
             if t_event is not None and not t_event.is_set():
                 threading.Timer(interval, self.check_self_update, [t_event]).start()
+
+    def poll(self):
+        self.coolq_bot.run(host=self.host, port=self.port, debug=False)
