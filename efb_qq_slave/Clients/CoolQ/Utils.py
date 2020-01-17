@@ -350,7 +350,7 @@ def get_friend_group_via_qq_show(cookie: str, csrf_token: str) -> Dict[str, str]
     friend_group = {}
     for i in range(len(data['data']['group'])):  # friend group
         for j in range(len(data['data']['group'][i]['friend'])):
-            current_user = data['data']['group'][i]['friend'][j]
+            current_user = str(data['data']['group'][i]['friend'][j]['uin'])
             current_group = data['data']['group'][i]['name']
             friend_group[current_user] = current_group
     return friend_group

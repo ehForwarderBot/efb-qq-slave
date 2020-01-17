@@ -431,7 +431,7 @@ class CoolQ(BaseClient):
         for i in range(len(res)):  # friend group
             current_user = res[i]
             txt = '[{}] {}'
-            txt = txt.format(self.friend_group[current_user['user_id']], current_user['nickname'])
+            txt = txt.format(self.friend_group[str(current_user['user_id'])], current_user['nickname'])
 
             # Disable nickname & remark comparsion for it's too time-consuming
             context = {'user_id': str(current_user['uin']),
@@ -794,7 +794,7 @@ class CoolQ(BaseClient):
                 return ''
         if uid not in self.friend_group:
             return None  # I don't think you have such a friend
-        return self.friend_group[uid]
+        return self.friend_group[str(uid)]
         '''
         for i in range(len(self.friend_list)):  # friend group
             for j in range(len(self.friend_list[i]['friend'])):
