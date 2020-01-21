@@ -58,6 +58,9 @@ class CoolQ(BaseClient):
     repeat_counter = 0
     update_repeat_counter = 0
     event = threading.Event()
+    update_contacts_timer: threading.Timer
+    self_update_timer: threading.Timer
+    check_status_timer: threading.Timer
     host: str
     port: str
 
@@ -345,7 +348,8 @@ class CoolQ(BaseClient):
         # threading.Thread(target=self.check_running_status).start()
         self.check_status_periodically(threading.Event())
         self.check_self_update(threading.Event())
-        threading.Timer(1800, self.update_contacts_periodically, [threading.Event()]).start()
+        self.update_contacts_timer = threading.Timer(1800, self.update_contacts_periodically, [threading.Event()])
+        self.update_contacts_timer.start()
 
     def run_instance(self, *args, **kwargs):
         threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
@@ -731,7 +735,8 @@ class CoolQ(BaseClient):
                 self.repeat_counter = 0
 
         if t_event is not None and not t_event.is_set():
-            threading.Timer(interval, self.check_status_periodically, [t_event]).start()
+            self.check_status_timer = threading.Timer(interval, self.check_status_periodically, [t_event])
+            self.check_status_timer.start()
 
     def deliver_alert_to_master(self, message: str):
         context = {'message': message, 'uid_prefix': 'alert', 'event_description': self._('CoolQ Alert')}
@@ -780,7 +785,8 @@ class CoolQ(BaseClient):
                 self.update_repeat_counter = 0
         self.logger.debug('Update completed')
         if t_event is not None and not t_event.is_set():
-            threading.Timer(interval, self.update_contacts_periodically, [t_event]).start()
+            self.update_contacts_timer = threading.Timer(interval, self.update_contacts_periodically, [t_event])
+            self.update_contacts_timer.start()
 
     def get_friend_remark(self, uid):
         if not self.friend_list:
@@ -974,7 +980,8 @@ class CoolQ(BaseClient):
                                          .format(version=latest_version))
         else:
             if t_event is not None and not t_event.is_set():
-                threading.Timer(interval, self.check_self_update, [t_event]).start()
+                self.self_update_timer = threading.Timer(interval, self.check_self_update, [t_event])
+                self.self_update_timer.start()
 
     def poll(self):
         self.event = threading.Event()
@@ -983,3 +990,6 @@ class CoolQ(BaseClient):
 
     def stop_polling(self):
         self.event.set()
+        self.update_contacts_timer.cancel()
+        self.check_status_timer.cancel()
+        self.self_update_timer.cancel()
