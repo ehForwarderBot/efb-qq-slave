@@ -61,8 +61,6 @@ class CoolQ(BaseClient):
     update_contacts_timer: threading.Timer
     self_update_timer: threading.Timer
     check_status_timer: threading.Timer
-    host: str
-    port: str
 
     def __init__(self, client_id: str, config: Dict[str, Any], channel):
         super().__init__(client_id, config)
@@ -342,9 +340,6 @@ class CoolQ(BaseClient):
             )])
             coordinator.send_message(msg)
 
-        self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
-        self.host = self.client_config['host']
-        self.port = self.client_config['port']
         # threading.Thread(target=self.check_running_status).start()
         self.check_status_periodically(threading.Event())
         self.check_self_update(threading.Event())
@@ -984,6 +979,7 @@ class CoolQ(BaseClient):
                 self.self_update_timer.start()
 
     def poll(self):
+        self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
         self.event = threading.Event()
         self.event.wait()
         self.logger.debug("EQS gracefully shut down")
