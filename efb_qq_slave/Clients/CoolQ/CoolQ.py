@@ -449,7 +449,7 @@ class CoolQ(BaseClient):
             txt = txt.format(self.friend_group[str(current_user['user_id'])], current_user['nickname'])
 
             # Disable nickname & remark comparsion for it's too time-consuming
-            context = {'user_id': str(current_user['uin']),
+            context = {'user_id': str(current_user['user_id']),
                        'nickname': txt,
                        'alias': None}
             efb_chat = self.chat_manager.build_efb_chat_as_private(context)
@@ -977,7 +977,7 @@ class CoolQ(BaseClient):
         elif chat_type[0] == 'group':
             group_id = int(chat_type[1])
             context = {'message_type': 'group', 'group_id': group_id}
-            return self.chat_manager.build_efb_chat_as_group(context)
+            return self.chat_manager.build_efb_chat_as_group(context, update_member=True)
         elif chat_type[0] == 'discuss':
             discuss_id = int(chat_type[1])
             context = {'message_type': 'discuss', 'discuss_id': discuss_id}

@@ -101,7 +101,7 @@ class ChatManager:
                                alias=None if 'alias' not in context else context['alias'],
                                uid=str(member_uid))
 
-    def build_efb_chat_as_group(self, context):  # Should be cached
+    def build_efb_chat_as_group(self, context, update_member=False):  # Should be cached
         is_discuss = False if context['message_type'] == 'group' else True
         chat_uid = context['discuss_id'] if is_discuss else context['group_id']
         efb_chat = GroupChat(
@@ -116,10 +116,11 @@ class ChatManager:
             else:
                 efb_chat.name = chat_uid
             efb_chat.vendor_specific = {'is_discuss': False}
-            members = self.channel.QQClient.get_group_member_list(chat_uid, False)
-            if members:
-                for member in members:
-                    efb_chat.add_member(name=member['card'], alias=member['nickname'], uid=str(member['user_id']))
+            if update_member:
+                members = self.channel.QQClient.get_group_member_list(chat_uid, False)
+                if members:
+                    for member in members:
+                        efb_chat.add_member(name=member['card'], alias=member['nickname'], uid=str(member['user_id']))
         else:
             efb_chat.uid = 'discuss' + '_' + str(chat_uid)
             efb_chat.name = 'Discuss Group' + '_' + str(chat_uid)
