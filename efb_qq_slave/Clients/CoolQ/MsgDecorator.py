@@ -180,7 +180,7 @@ class QQMsgProcessor:
             mime = mime.decode()
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
-        efb_msg.filename = data['filename']
+        efb_msg.filename = quote(data['filename'])
         return efb_msg
 
     def qq_group_broadcast_wrapper(self, data, chat: Chat = None):

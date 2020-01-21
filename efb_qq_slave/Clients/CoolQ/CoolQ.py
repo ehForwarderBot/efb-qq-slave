@@ -944,9 +944,9 @@ class CoolQ(BaseClient):
             context['message_type'] = 'group'
             efb_msg = self.msg_decorator.qq_file_after_wrapper(data)
             efb_msg.uid = str(context['user_id']) + '_' + str(uuid.uuid4()) + '_' + str(1)
-            efb_msg.text = 'Sent a file'
+            efb_msg.text = 'Sent a file\n{}'.format(context['file']['name'])
             efb_msg.chat = self.chat_manager.build_efb_chat_as_group(context)
-            efb_msg.author = self.chat_manager.build_or_get_efb_member(efb_msg.author, context)
+            efb_msg.author = self.chat_manager.build_or_get_efb_member(efb_msg.chat, context)
             efb_msg.deliver_to = coordinator.master
             async_send_messages_to_master(efb_msg)
 
