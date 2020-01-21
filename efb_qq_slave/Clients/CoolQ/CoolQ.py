@@ -12,6 +12,7 @@ from cherrypy._cpserver import Server
 
 import cqhttp
 from PIL import Image
+from cherrypy.process.wspbus import states
 from cqhttp import CQHttp
 from ehforwarderbot import Message, MsgType, Chat, coordinator, Status
 from ehforwarderbot.chat import SelfChatMember, ChatMember, SystemChatMember
@@ -62,6 +63,7 @@ class CoolQ(BaseClient):
     update_contacts_timer: threading.Timer
     self_update_timer: threading.Timer
     check_status_timer: threading.Timer
+    cherryServer: Server
 
     def __init__(self, client_id: str, config: Dict[str, Any], channel):
         super().__init__(client_id, config)
@@ -351,11 +353,12 @@ class CoolQ(BaseClient):
         # threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
         cherrypy.tree.graft(self.coolq_bot.wsgi, "/")
         cherrypy.server.unsubscribe()
-        server = Server()
-        server.socket_host = self.client_config['host']
-        server.socket_port = self.client_config['port']
-        server.subscribe()
+        self.cherryServer = Server()
+        self.cherryServer.socket_host = self.client_config['host']
+        self.cherryServer.socket_port = self.client_config['port']
+        self.cherryServer.subscribe()
         cherrypy.engine.start()
+        cherrypy.engine.wait(states.EXITING)
 
     @extra(name=_("Restart CoolQ Client"),
            desc=_("Force CoolQ to restart\n"
@@ -1005,3 +1008,4 @@ class CoolQ(BaseClient):
         self.update_contacts_timer.cancel()
         self.check_status_timer.cancel()
         self.self_update_timer.cancel()
+        cherrypy.engine.exit()

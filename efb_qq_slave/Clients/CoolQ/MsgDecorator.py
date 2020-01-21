@@ -158,7 +158,7 @@ class QQMsgProcessor:
         if ats:  # This is used to replace specific text with @blahblah
             # And Milkice really requires a brain check
             efb_msg.substitutions = Substitutions(ats)
-        return [efb_msg]
+        return efb_msg
 
     def coolq_code_at_wrapper(self, uid):
         return '[CQ:at,qq={}]'.format(uid)
