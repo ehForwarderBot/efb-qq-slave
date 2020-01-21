@@ -40,7 +40,7 @@ class QQMsgProcessor:
         if isinstance(mime, bytes):
             mime = mime.decode()
         efb_msg.filename = efb_msg.file.name
-        efb_msg.path = efb_msg.file.name
+        efb_msg.path = data['file'] if 'file' in data else efb_msg.file.name
         efb_msg.mime = mime
         if "gif" in mime:
             efb_msg.type = MsgType.Animation
@@ -180,7 +180,7 @@ class QQMsgProcessor:
             mime = mime.decode()
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
-        efb_msg.filename = quote(data['filename'])
+        efb_msg.filename = data['filename']
         return [efb_msg]
 
     def qq_group_broadcast_wrapper(self, data, chat: Chat = None):
