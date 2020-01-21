@@ -7,13 +7,14 @@ import uuid
 from datetime import timedelta, datetime
 from gettext import translation
 from typing import Any, Dict, List, BinaryIO
-from multiprocessing import Process
+import cherrypy
+from cherrypy._cpserver import Server
 
 import cqhttp
 from PIL import Image
 from cqhttp import CQHttp
 from ehforwarderbot import Message, MsgType, Chat, coordinator, Status
-from ehforwarderbot.chat import SelfChatMember, ChatMember
+from ehforwarderbot.chat import SelfChatMember, ChatMember, SystemChatMember
 from ehforwarderbot.exceptions import EFBMessageError, EFBOperationNotSupported, EFBChatNotFound
 from ehforwarderbot.message import MessageCommands, MessageCommand
 from ehforwarderbot.status import MessageRemoval
@@ -347,7 +348,14 @@ class CoolQ(BaseClient):
         self.update_contacts_timer.start()
 
     def run_instance(self, *args, **kwargs):
-        threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
+        # threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
+        cherrypy.tree.graft(self.coolq_bot.wsgi, "/")
+        cherrypy.server.unsubscribe()
+        server = Server()
+        server.socket_host = self.client_config['host']
+        server.socket_port = self.client_config['port']
+        server.subscribe()
+        cherrypy.engine.start()
 
     @extra(name=_("Restart CoolQ Client"),
            desc=_("Force CoolQ to restart\n"
@@ -827,11 +835,15 @@ class CoolQ(BaseClient):
         context['message_type'] = 'group'
         self.logger.debug(repr(context))
         chat = self.chat_manager.build_efb_chat_as_group(context)
+        try:
+            author = chat.get_member(SystemChatMember.SYSTEM_ID)
+        except KeyError:
+            author = chat.add_system_member()
         msg = Message(
             uid="__group_notice__.%s" % int(time.time()),
             type=MsgType.Text,
             chat=chat,
-            author=chat.other,
+            author=author,
             text=context['message'],
             deliver_to=coordinator.master
         )
@@ -840,12 +852,16 @@ class CoolQ(BaseClient):
     def send_msg_to_master(self, context):
         self.logger.debug(repr(context))
         chat = self.chat_manager.build_efb_chat_as_system_user(context)
+        try:
+            author = chat.get_member(SystemChatMember.SYSTEM_ID)
+        except KeyError:
+            author = chat.add_system_member()
         msg = Message(
             uid="__{context[uid_prefix]}__.{uni_id}".format(context=context,
                                                             uni_id=str(int(time.time()))),
             type=MsgType.Text,
             chat=chat,
-            author=chat.other,
+            author=author,
             deliver_to=coordinator.master
         )
 
