@@ -999,12 +999,9 @@ class CoolQ(BaseClient):
 
     def poll(self):
         self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
-        self.event = threading.Event()
-        self.event.wait()
         self.logger.debug("EQS gracefully shut down")
 
     def stop_polling(self):
-        self.event.set()
         self.update_contacts_timer.cancel()
         self.check_status_timer.cancel()
         self.self_update_timer.cancel()
