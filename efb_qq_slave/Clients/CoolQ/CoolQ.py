@@ -100,6 +100,7 @@ class CoolQ(BaseClient):
                 if context['message_type'] == 'group':
                     if context['sub_type'] == 'notice':
                         context['event_description'] = self._("System Notification")
+                        context['uid_prefix'] = 'group_notification'
                         author = self.chat_manager.build_efb_chat_as_system_user(context)
                     else:
                         if remark is not None:
@@ -303,6 +304,7 @@ class CoolQ(BaseClient):
         @self.coolq_bot.on_request('group')
         def handle_group_request(context):
             self.logger.debug(repr(context))
+            context['uid_prefix'] = 'group_request'
             context['group_name'] = self._('[Request]') + self.get_group_info(context['group_id'])['group_name']
             context['group_id_orig'] = context['group_id']
             context['group_id'] = str(context['group_id']) + "_notification"
