@@ -78,275 +78,277 @@ class CoolQ(BaseClient):
         self.is_logged_in = False
         self.msg_decorator = QQMsgProcessor(instance=self)
 
-        @self.coolq_bot.on_message()
-        def handle_msg(context):
-            self.logger.debug(repr(context))
-            msg_element = context['message']
-            main_text: str = ''
-            messages: List[Message] = []
-            qq_uid = context['user_id']
-            at_list = {}
-            chat: Chat
-            author: ChatMember
+        self.check_status_periodically(threading.Event())
+        self.update_contacts_timer = threading.Timer(1800, self.update_contacts_periodically, [threading.Event()])
+        self.update_contacts_timer.start()
+        # threading.Thread(target=self.check_running_status).start()
 
-            if context['message_type'] == 'private':
-                chat = self.chat_manager.build_efb_chat_as_private(context)
-                # efb_msg.chat: EFBChat = self.chat_manager.build_efb_chat_as_user(context, True)
-            else:
-                chat = self.chat_manager.build_efb_chat_as_group(context)
+    @coolq_bot.on_message()
+    def handle_msg(self, context):
+        self.logger.debug(repr(context))
+        msg_element = context['message']
+        main_text: str = ''
+        messages: List[Message] = []
+        qq_uid = context['user_id']
+        at_list = {}
+        chat: Chat
+        author: ChatMember
 
-            if 'anonymous' not in context or context['anonymous'] is None:
-                remark = self.get_friend_remark(qq_uid)
-                if context['message_type'] == 'group':
-                    if context['sub_type'] == 'notice':
-                        context['event_description'] = self._("System Notification")
-                        context['uid_prefix'] = 'group_notification'
-                        author = self.chat_manager.build_efb_chat_as_system_user(context)
-                    else:
-                        if remark is not None:
-                            context['nickname'] = remark
-                        g_id = context['group_id']
-                        member_info = self.coolq_api_query('get_group_member_info',
-                                                           group_id=g_id,
-                                                           user_id=qq_uid)
-                        if member_info is not None:
-                            context['alias'] = member_info['card']
-                        author = self.chat_manager.build_or_get_efb_member(chat, context)
+        if context['message_type'] == 'private':
+            chat = self.chat_manager.build_efb_chat_as_private(context)
+            # efb_msg.chat: EFBChat = self.chat_manager.build_efb_chat_as_user(context, True)
+        else:
+            chat = self.chat_manager.build_efb_chat_as_group(context)
+
+        if 'anonymous' not in context or context['anonymous'] is None:
+            remark = self.get_friend_remark(qq_uid)
+            if context['message_type'] == 'group':
+                if context['sub_type'] == 'notice':
+                    context['event_description'] = self._("System Notification")
+                    context['uid_prefix'] = 'group_notification'
+                    author = self.chat_manager.build_efb_chat_as_system_user(context)
                 else:
-                    if context['message_type'] == 'private' or context['message_type'] == 'discuss':
-                        context['alias'] = remark
-                    author = self.chat_manager.build_or_get_efb_member(chat, context)
-            else:  # anonymous user in group
-                author = self.chat_manager.build_efb_chat_as_anonymous_user(chat, context)
-
-            for i in range(len(msg_element)):
-                msg_type = msg_element[i]['type']
-                msg_data = msg_element[i]['data']
-                if msg_type == 'text':
-                    main_text += msg_data['text']
-                elif msg_type == 'face':
-                    qq_face = int(msg_data['id'])
-                    if qq_face in qq_emoji_list:
-                        main_text += qq_emoji_list[qq_face]
-                    else:
-                        main_text += '\u2753'  # ❓
-                elif msg_type == 'sface':
-                    main_text += '\u2753'  # ❓
-                elif msg_type == 'at':
-                    # todo Recheck if bug exists
+                    if remark is not None:
+                        context['nickname'] = remark
                     g_id = context['group_id']
-                    my_uid = self.get_qq_uid()
-                    self.logger.debug('My QQ uid: %s\n'
-                                      'QQ mentioned: %s\n', my_uid, msg_data['qq'])
-                    group_card = ''
-                    if str(msg_data['qq']) == 'all':
-                        group_card = 'all'
-                    else:
-                        member_info = self.coolq_api_query('get_group_member_info',
-                                                           group_id=g_id,
-                                                           user_id=msg_data['qq'])
-                        group_card = ""
-                        if member_info:
-                            group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
-                    self.logger.debug('Group card: {}'.format(group_card))
-                    substitution_begin = 0
-                    substitution_end = 0
-                    if main_text == '':
-                        substitution_begin = len(main_text)
-                        substitution_end = len(main_text) + len(group_card) + 1
-                        main_text += '@{} '.format(group_card)
-                    else:
-                        substitution_begin = len(main_text) + 1
-                        substitution_end = len(main_text) + len(group_card) + 2
-                        main_text += ' @{} '.format(group_card)
-                    if str(my_uid) == str(msg_data['qq']) or str(msg_data['qq']) == 'all':
-                        at_list[(substitution_begin, substitution_end)] = chat.self
-                else:
-                    messages.extend(self.call_msg_decorator(msg_type, msg_data, chat))
-            if main_text != "":
-                messages.append(self.msg_decorator.qq_text_simple_wrapper(main_text, at_list))
-            uid: str = str(uuid.uuid4())
-            coolq_msg_id = context['message_id']
-            for i in range(len(messages)):
-                if not isinstance(messages[i], Message):
-                    continue
-                efb_msg: Message = messages[i]
-                efb_msg.uid = uid + '_' + str(coolq_msg_id) + '_' + str(i)
-                efb_msg.chat = chat
-                efb_msg.author = author
-                # if qq_uid != '80000000':
-
-                # Append discuss group into group list
-                if context['message_type'] == 'discuss' and efb_msg.chat not in self.discuss_list:
-                    self.discuss_list.append(efb_msg.chat)
-
-                efb_msg.deliver_to = coordinator.master
-
-                def send_message_wrapper(*args, **kwargs):
-                    threading.Thread(target=async_send_messages_to_master, args=args, kwargs=kwargs).start()
-
-                send_message_wrapper(efb_msg)
-
-        @self.coolq_bot.on_notice('group_increase')
-        def handle_group_increase_msg(context):
-            context['event_description'] = self._('\u2139 Group Member Increase Event')
-            if (context['sub_type']) == 'invite':
-                text = self._('{nickname}({context[user_id]}) joined the group({group_name}) via invitation')
+                    member_info = self.coolq_api_query('get_group_member_info',
+                                                       group_id=g_id,
+                                                       user_id=qq_uid)
+                    if member_info is not None:
+                        context['alias'] = member_info['card']
+                    author = self.chat_manager.build_or_get_efb_member(chat, context)
             else:
-                text = self._('{nickname}({context[user_id]}) joined the group({group_name})')
+                if context['message_type'] == 'private' or context['message_type'] == 'discuss':
+                    context['alias'] = remark
+                author = self.chat_manager.build_or_get_efb_member(chat, context)
+        else:  # anonymous user in group
+            author = self.chat_manager.build_efb_chat_as_anonymous_user(chat, context)
 
-            original_group = self.get_group_info(context['group_id'], False)
-            group_name = context['group_id']
-            if original_group is not None and 'group_name' in original_group:
-                group_name = original_group['group_name']
+        for i in range(len(msg_element)):
+            msg_type = msg_element[i]['type']
+            msg_data = msg_element[i]['data']
+            if msg_type == 'text':
+                main_text += msg_data['text']
+            elif msg_type == 'face':
+                qq_face = int(msg_data['id'])
+                if qq_face in qq_emoji_list:
+                    main_text += qq_emoji_list[qq_face]
+                else:
+                    main_text += '\u2753'  # ❓
+            elif msg_type == 'sface':
+                main_text += '\u2753'  # ❓
+            elif msg_type == 'at':
+                # todo Recheck if bug exists
+                g_id = context['group_id']
+                my_uid = self.get_qq_uid()
+                self.logger.debug('My QQ uid: %s\n'
+                                  'QQ mentioned: %s\n', my_uid, msg_data['qq'])
+                group_card = ''
+                if str(msg_data['qq']) == 'all':
+                    group_card = 'all'
+                else:
+                    member_info = self.coolq_api_query('get_group_member_info',
+                                                       group_id=g_id,
+                                                       user_id=msg_data['qq'])
+                    group_card = ""
+                    if member_info:
+                        group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
+                self.logger.debug('Group card: {}'.format(group_card))
+                substitution_begin = 0
+                substitution_end = 0
+                if main_text == '':
+                    substitution_begin = len(main_text)
+                    substitution_end = len(main_text) + len(group_card) + 1
+                    main_text += '@{} '.format(group_card)
+                else:
+                    substitution_begin = len(main_text) + 1
+                    substitution_end = len(main_text) + len(group_card) + 2
+                    main_text += ' @{} '.format(group_card)
+                if str(my_uid) == str(msg_data['qq']) or str(msg_data['qq']) == 'all':
+                    at_list[(substitution_begin, substitution_end)] = chat.self
+            else:
+                messages.extend(self.call_msg_decorator(msg_type, msg_data, chat))
+        if main_text != "":
+            messages.append(self.msg_decorator.qq_text_simple_wrapper(main_text, at_list))
+        uid: str = str(uuid.uuid4())
+        coolq_msg_id = context['message_id']
+        for i in range(len(messages)):
+            if not isinstance(messages[i], Message):
+                continue
+            efb_msg: Message = messages[i]
+            efb_msg.uid = uid + '_' + str(coolq_msg_id) + '_' + str(i)
+            efb_msg.chat = chat
+            efb_msg.author = author
+            # if qq_uid != '80000000':
+
+            # Append discuss group into group list
+            if context['message_type'] == 'discuss' and efb_msg.chat not in self.discuss_list:
+                self.discuss_list.append(efb_msg.chat)
+
+            efb_msg.deliver_to = coordinator.master
+
+            def send_message_wrapper(*args, **kwargs):
+                threading.Thread(target=async_send_messages_to_master, args=args, kwargs=kwargs).start()
+
+            send_message_wrapper(efb_msg)
+
+    @coolq_bot.on_notice('group_increase')
+    def handle_group_increase_msg(self, context):
+        context['event_description'] = self._('\u2139 Group Member Increase Event')
+        if (context['sub_type']) == 'invite':
+            text = self._('{nickname}({context[user_id]}) joined the group({group_name}) via invitation')
+        else:
+            text = self._('{nickname}({context[user_id]}) joined the group({group_name})')
+
+        original_group = self.get_group_info(context['group_id'], False)
+        group_name = context['group_id']
+        if original_group is not None and 'group_name' in original_group:
+            group_name = original_group['group_name']
+        text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
+                           context=context,
+                           group_name=group_name)
+
+        context['message'] = text
+        self.send_efb_group_notice(context)
+
+    @coolq_bot.on_notice('group_decrease')
+    def handle_group_decrease_msg(self, context):
+        context['event_description'] = self._("\u2139 Group Member Decrease Event")
+        original_group = self.get_group_info(context['group_id'], False)
+        group_name = context['group_id']
+        if original_group is not None and 'group_name' in original_group:
+            group_name = original_group['group_name']
+        text = ''
+        if context['sub_type'] == 'kick_me':
+            text = self._("You've been kicked from the group({})").format(group_name)
+        else:
+            if context['sub_type'] == 'leave':
+                text = self._('{nickname}({context[user_id]}) quited the group({group_name})')
+            else:
+                text = self._('{nickname}({context[user_id]}) was kicked from the group({group_name})')
             text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
                                context=context,
                                group_name=group_name)
+        context['message'] = text
+        self.send_efb_group_notice(context)
 
-            context['message'] = text
-            self.send_efb_group_notice(context)
+    @coolq_bot.on_notice('group_upload')
+    def handle_group_file_upload_msg(self, context):
+        context['event_description'] = self._("\u2139 Group File Upload Event")
 
-        @self.coolq_bot.on_notice('group_decrease')
-        def handle_group_decrease_msg(context):
-            context['event_description'] = self._("\u2139 Group Member Decrease Event")
-            original_group = self.get_group_info(context['group_id'], False)
-            group_name = context['group_id']
-            if original_group is not None and 'group_name' in original_group:
-                group_name = original_group['group_name']
-            text = ''
-            if context['sub_type'] == 'kick_me':
-                text = self._("You've been kicked from the group({})").format(group_name)
-            else:
-                if context['sub_type'] == 'leave':
-                    text = self._('{nickname}({context[user_id]}) quited the group({group_name})')
-                else:
-                    text = self._('{nickname}({context[user_id]}) was kicked from the group({group_name})')
-                text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
-                                   context=context,
-                                   group_name=group_name)
-            context['message'] = text
-            self.send_efb_group_notice(context)
+        original_group = self.get_group_info(context['group_id'], False)
+        group_name = context['group_id']
+        if original_group is not None and 'group_name' in original_group:
+            group_name = original_group['group_name']
 
-        @self.coolq_bot.on_notice('group_upload')
-        def handle_group_file_upload_msg(context):
-            context['event_description'] = self._("\u2139 Group File Upload Event")
+        file_info_msg = self._('File ID: {file[id]}\n'
+                               'Filename: {file[name]}\n'
+                               'File size: {file[size]}').format(file=context['file'])
+        member_info = self.coolq_api_query('get_group_member_info',
+                                           group_id=context['group_id'],
+                                           user_id=context['user_id'])
+        group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
+        text = self._('{member_card}({context[user_id]}) uploaded a file to group({group_name})\n')
+        text = text.format(member_card=group_card,
+                           context=context,
+                           group_name=group_name) + file_info_msg
+        context['message'] = text
+        self.send_efb_group_notice(context)
 
-            original_group = self.get_group_info(context['group_id'], False)
-            group_name = context['group_id']
-            if original_group is not None and 'group_name' in original_group:
-                group_name = original_group['group_name']
+        cred = self.coolq_api_query('get_credentials')
+        cookies = cred['cookies']
+        csrf_token = cred['csrf_token']
+        param_dict = {
+            'context': context,
+            'cookie': cookies,
+            'csrf_token': csrf_token,
+            'uin': self.get_qq_uid(),
+            'group_id': context['group_id'],
+            'file_id': context['file']['id'],
+            'filename': context['file']['name'],
+            'file_size': context['file']['size']
+        }
 
-            file_info_msg = self._('File ID: {file[id]}\n'
-                                   'Filename: {file[name]}\n'
-                                   'File size: {file[size]}').format(file=context['file'])
-            member_info = self.coolq_api_query('get_group_member_info',
-                                               group_id=context['group_id'],
-                                               user_id=context['user_id'])
-            group_card = member_info['card'] if member_info['card'] != '' else member_info['nickname']
-            text = self._('{member_card}({context[user_id]}) uploaded a file to group({group_name})\n')
-            text = text.format(member_card=group_card,
-                               context=context,
-                               group_name=group_name) + file_info_msg
-            context['message'] = text
-            self.send_efb_group_notice(context)
+        threading.Thread(target=self.async_download_file, args=[], kwargs=param_dict).start()
 
-            cred = self.coolq_api_query('get_credentials')
-            cookies = cred['cookies']
-            csrf_token = cred['csrf_token']
-            param_dict = {
-                'context': context,
-                'cookie': cookies,
-                'csrf_token': csrf_token,
-                'uin': self.get_qq_uid(),
-                'group_id': context['group_id'],
-                'file_id': context['file']['id'],
-                'filename': context['file']['name'],
-                'file_size': context['file']['size']
-            }
+    @coolq_bot.on_notice('friend_add')
+    def handle_friend_add_msg(self, context):
+        context['event_description'] = self._('\u2139 New Friend Event')
+        context['uid_prefix'] = 'friend_add'
+        text = self._('{nickname}({context[user_id]}) has become your friend!')
+        text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
+                           context=context)
+        context['message'] = text
+        self.send_msg_to_master(context)
 
-            threading.Thread(target=self.async_download_file, args=[], kwargs=param_dict).start()
+    @coolq_bot.on_request('friend')  # Add friend request
+    def handle_add_friend_request(self, context):
+        self.logger.debug(repr(context))
+        context['event_description'] = self._('\u2139 New Friend Request')
+        context['uid_prefix'] = 'friend_request'
+        text = self._('{nickname}({context[user_id]}) wants to be your friend!\n'
+                      'Here is the verification comment:\n'
+                      '{context[comment]}')
+        text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
+                           context=context)
+        context['message'] = text
+        commands = [MessageCommand(
+            name=self._("Accept"),
+            callable_name="process_friend_request",
+            kwargs={'result': 'accept',
+                    'flag': context['flag']}
+        ), MessageCommand(
+            name=self._("Decline"),
+            callable_name="process_friend_request",
+            kwargs={'result': 'decline',
+                    'flag': context['flag']}
+        )]
+        context['commands'] = commands
+        self.send_msg_to_master(context)
 
-        @self.coolq_bot.on_notice('friend_add')
-        def handle_friend_add_msg(context):
-            context['event_description'] = self._('\u2139 New Friend Event')
-            context['uid_prefix'] = 'friend_add'
-            text = self._('{nickname}({context[user_id]}) has become your friend!')
-            text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
-                               context=context)
-            context['message'] = text
-            self.send_msg_to_master(context)
-
-        @self.coolq_bot.on_request('friend')  # Add friend request
-        def handle_add_friend_request(context):
-            self.logger.debug(repr(context))
-            context['event_description'] = self._('\u2139 New Friend Request')
-            context['uid_prefix'] = 'friend_request'
-            text = self._('{nickname}({context[user_id]}) wants to be your friend!\n'
-                          'Here is the verification comment:\n'
-                          '{context[comment]}')
-            text = text.format(nickname=self.get_stranger_info(context['user_id'])['nickname'],
-                               context=context)
-            context['message'] = text
-            commands = [MessageCommand(
-                name=self._("Accept"),
-                callable_name="process_friend_request",
-                kwargs={'result': 'accept',
-                        'flag': context['flag']}
-            ), MessageCommand(
-                name=self._("Decline"),
-                callable_name="process_friend_request",
-                kwargs={'result': 'decline',
-                        'flag': context['flag']}
-            )]
-            context['commands'] = commands
-            self.send_msg_to_master(context)
-
-        @self.coolq_bot.on_request('group')
-        def handle_group_request(context):
-            self.logger.debug(repr(context))
-            context['uid_prefix'] = 'group_request'
-            context['group_name'] = self._('[Request]') + self.get_group_info(context['group_id'])['group_name']
-            context['group_id_orig'] = context['group_id']
-            context['group_id'] = str(context['group_id']) + "_notification"
-            context['message_type'] = 'group'
-            context['event_description'] = '\u2139 New Group Join Request'
-            original_group = self.get_group_info(context['group_id'], False)
-            group_name = context['group_id']
-            if original_group is not None and 'group_name' in original_group:
-                group_name = original_group['group_name']
-            msg = Message()
-            msg.uid = 'group' + '_' + str(context['group_id'])
-            msg.author = self.chat_manager.build_efb_chat_as_system_user(context)
-            msg.chat = self.chat_manager.build_efb_chat_as_group(context)
-            msg.deliver_to = coordinator.master
-            msg.type = MsgType.Text
-            name = ""
-            if not self.get_friend_remark(context['user_id']):
-                name = "{}({})[{}] ".format(
-                    self.get_stranger_info(context['user_id'])['nickname'], self.get_friend_remark(context['user_id']),
-                    context['user_id'])
-            else:
-                name = "{}[{}] ".format(self.get_stranger_info(context['user_id'])['nickname'], context['user_id'])
-            msg.text = "{} wants to join the group {}({}). \nHere is the comment: {}".format(
-                name, group_name, context['group_id_orig'], context['comment']
-            )
-            msg.commands = MessageCommands([MessageCommand(
-                name=self._("Accept"),
-                callable_name="process_group_request",
-                kwargs={'result': 'accept',
-                        'flag': context['flag'],
-                        'sub_type': context['sub_type']}
-            ), MessageCommand(
-                name=self._("Decline"),
-                callable_name="process_group_request",
-                kwargs={'result': 'decline',
-                        'flag': context['flag'],
-                        'sub_type': context['sub_type']}
-            )])
-            coordinator.send_message(msg)
-
-        # threading.Thread(target=self.check_running_status).start()
-
+    @coolq_bot.on_request('group')
+    def handle_group_request(self, context):
+        self.logger.debug(repr(context))
+        context['uid_prefix'] = 'group_request'
+        context['group_name'] = self._('[Request]') + self.get_group_info(context['group_id'])['group_name']
+        context['group_id_orig'] = context['group_id']
+        context['group_id'] = str(context['group_id']) + "_notification"
+        context['message_type'] = 'group'
+        context['event_description'] = '\u2139 New Group Join Request'
+        original_group = self.get_group_info(context['group_id'], False)
+        group_name = context['group_id']
+        if original_group is not None and 'group_name' in original_group:
+            group_name = original_group['group_name']
+        msg = Message()
+        msg.uid = 'group' + '_' + str(context['group_id'])
+        msg.author = self.chat_manager.build_efb_chat_as_system_user(context)
+        msg.chat = self.chat_manager.build_efb_chat_as_group(context)
+        msg.deliver_to = coordinator.master
+        msg.type = MsgType.Text
+        name = ""
+        if not self.get_friend_remark(context['user_id']):
+            name = "{}({})[{}] ".format(
+                self.get_stranger_info(context['user_id'])['nickname'], self.get_friend_remark(context['user_id']),
+                context['user_id'])
+        else:
+            name = "{}[{}] ".format(self.get_stranger_info(context['user_id'])['nickname'], context['user_id'])
+        msg.text = "{} wants to join the group {}({}). \nHere is the comment: {}".format(
+            name, group_name, context['group_id_orig'], context['comment']
+        )
+        msg.commands = MessageCommands([MessageCommand(
+            name=self._("Accept"),
+            callable_name="process_group_request",
+            kwargs={'result': 'accept',
+                    'flag': context['flag'],
+                    'sub_type': context['sub_type']}
+        ), MessageCommand(
+            name=self._("Decline"),
+            callable_name="process_group_request",
+            kwargs={'result': 'decline',
+                    'flag': context['flag'],
+                    'sub_type': context['sub_type']}
+        )])
+        coordinator.send_message(msg)
 
     def run_instance(self, *args, **kwargs):
         # threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
@@ -853,6 +855,8 @@ class CoolQ(BaseClient):
 
     def send_msg_to_master(self, context):
         self.logger.debug(repr(context))
+        if not coordinator.master:  # Master Channel not initialized
+            self.logger.exception("Error: {}".format(context['message']))
         chat = self.chat_manager.build_efb_chat_as_system_user(context)
         try:
             author = chat.get_member(SystemChatMember.SYSTEM_ID)
@@ -997,10 +1001,7 @@ class CoolQ(BaseClient):
                 self.self_update_timer.start()
 
     def poll(self):
-        self.check_status_periodically(threading.Event())
         self.check_self_update(threading.Event())
-        self.update_contacts_timer = threading.Timer(1800, self.update_contacts_periodically, [threading.Event()])
-        self.update_contacts_timer.start()
         self.run_instance(host=self.client_config['host'], port=self.client_config['port'], debug=False)
         self.logger.debug("EQS gracefully shut down")
 
