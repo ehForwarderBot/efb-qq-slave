@@ -37,7 +37,7 @@ setup(
     install_requires=[
         "ehforwarderbot",
         "PyYaml",
-        'requests', 'python-magic', 'Pillow', 'cqhttp', 'cherrypy'
+        'requests', 'python-magic', 'Pillow', 'aiocqhttp', 'trio', 'quart', 'hypercorn'
     ],
     entry_points={
         'ehforwarderbot.slave': 'milkice.qq = efb_qq_slave:QQMessengerChannel'

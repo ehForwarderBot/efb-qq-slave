@@ -1,4 +1,5 @@
 # coding: utf-8
+import asyncio
 import logging
 import tempfile
 import threading
@@ -7,13 +8,13 @@ import uuid
 from datetime import timedelta, datetime
 from gettext import translation
 from typing import Any, Dict, List, BinaryIO
-import cherrypy
-from cherrypy._cpserver import Server
+from functools import partial
 
-import cqhttp
 from PIL import Image
-from cherrypy.process.wspbus import states
-from cqhttp import CQHttp
+from aiocqhttp import CQHttp
+from hypercorn.config import Config
+import trio
+from hypercorn.trio import serve
 from ehforwarderbot import Message, MsgType, Chat, coordinator, Status
 from ehforwarderbot.chat import SelfChatMember, ChatMember, SystemChatMember
 from ehforwarderbot.exceptions import EFBMessageError, EFBOperationNotSupported, EFBChatNotFound
@@ -59,11 +60,10 @@ class CoolQ(BaseClient):
     extra_group_list = []
     repeat_counter = 0
     update_repeat_counter = 0
-    event = threading.Event()
+    event = asyncio.Event
     update_contacts_timer: threading.Timer
     self_update_timer: threading.Timer
     check_status_timer: threading.Timer
-    cherryServer: Server
 
     def __init__(self, client_id: str, config: Dict[str, Any], channel):
         super().__init__(client_id, config)
@@ -79,7 +79,7 @@ class CoolQ(BaseClient):
         self.msg_decorator = QQMsgProcessor(instance=self)
 
         @self.coolq_bot.on_message()
-        def handle_msg(context):
+        async def handle_msg(context):
             self.logger.debug(repr(context))
             msg_element = context['message']
             main_text: str = ''
@@ -187,7 +187,7 @@ class CoolQ(BaseClient):
                 send_message_wrapper(efb_msg)
 
         @self.coolq_bot.on_notice('group_increase')
-        def handle_group_increase_msg(context):
+        async def handle_group_increase_msg(context):
             context['event_description'] = self._('\u2139 Group Member Increase Event')
             if (context['sub_type']) == 'invite':
                 text = self._('{nickname}({context[user_id]}) joined the group({group_name}) via invitation')
@@ -206,7 +206,7 @@ class CoolQ(BaseClient):
             self.send_efb_group_notice(context)
 
         @self.coolq_bot.on_notice('group_decrease')
-        def handle_group_decrease_msg(context):
+        async def handle_group_decrease_msg(context):
             context['event_description'] = self._("\u2139 Group Member Decrease Event")
             original_group = self.get_group_info(context['group_id'], False)
             group_name = context['group_id']
@@ -227,7 +227,7 @@ class CoolQ(BaseClient):
             self.send_efb_group_notice(context)
 
         @self.coolq_bot.on_notice('group_upload')
-        def handle_group_file_upload_msg(context):
+        async def handle_group_file_upload_msg(context):
             context['event_description'] = self._("\u2139 Group File Upload Event")
 
             original_group = self.get_group_info(context['group_id'], False)
@@ -266,7 +266,7 @@ class CoolQ(BaseClient):
             threading.Thread(target=self.async_download_file, args=[], kwargs=param_dict).start()
 
         @self.coolq_bot.on_notice('friend_add')
-        def handle_friend_add_msg(context):
+        async def handle_friend_add_msg(context):
             context['event_description'] = self._('\u2139 New Friend Event')
             context['uid_prefix'] = 'friend_add'
             text = self._('{nickname}({context[user_id]}) has become your friend!')
@@ -276,7 +276,7 @@ class CoolQ(BaseClient):
             self.send_msg_to_master(context)
 
         @self.coolq_bot.on_request('friend')  # Add friend request
-        def handle_add_friend_request(context):
+        async def handle_add_friend_request(context):
             self.logger.debug(repr(context))
             context['event_description'] = self._('\u2139 New Friend Request')
             context['uid_prefix'] = 'friend_request'
@@ -301,7 +301,7 @@ class CoolQ(BaseClient):
             self.send_msg_to_master(context)
 
         @self.coolq_bot.on_request('group')
-        def handle_group_request(context):
+        async def handle_group_request(context):
             self.logger.debug(repr(context))
             context['group_name'] = self._('[Request]') + self.get_group_info(context['group_id'])['group_name']
             context['group_id_orig'] = context['group_id']
@@ -351,14 +351,11 @@ class CoolQ(BaseClient):
 
     def run_instance(self, *args, **kwargs):
         # threading.Thread(target=self.coolq_bot.run, args=args, kwargs=kwargs, daemon=True).start()
-        cherrypy.tree.graft(self.coolq_bot.wsgi, "/")
-        cherrypy.server.unsubscribe()
-        self.cherryServer = Server()
-        self.cherryServer.socket_host = self.client_config['host']
-        self.cherryServer.socket_port = self.client_config['port']
-        self.cherryServer.subscribe()
-        cherrypy.engine.start()
-        cherrypy.engine.wait(states.EXITING)
+        self.event = asyncio.Event()
+        config = Config()
+        config.bind = "{}:{}".format(self.client_config['host'], self.client_config['port'])
+        trio.run(partial(serve, self.coolq_bot.asgi, config))
+        serve(app=self.coolq_bot.asgi, config=config, shutdown_trigger=self.event.wait)
 
     @extra(name=_("Restart CoolQ Client"),
            desc=_("Force CoolQ to restart\n"
@@ -400,9 +397,9 @@ class CoolQ(BaseClient):
         # return self.coolq_bot.get_stranger_info(user_id=user_id, no_cache=False)
 
     def get_login_info(self) -> Dict[Any, Any]:
-        res = self.coolq_bot.get_status()
+        res = self._coolq_api_wrapper('get_status')
         if 'good' in res or 'online' in res:
-            data = self.coolq_bot.get_login_info()
+            data = self._coolq_api_wrapper('get_login_info')
             return {'status': 0, 'data': {'uid': data['user_id'], 'nickname': data['nickname']}}
         else:
             return {'status': 1}
@@ -666,11 +663,12 @@ class CoolQ(BaseClient):
     def _coolq_api_wrapper(self, func_name, **kwargs):
         try:
             func = getattr(self.coolq_bot, func_name)
-            res = func(**kwargs)
+            res = trio.run(func, **kwargs)
+            # res = func(**kwargs)
         except RequestException as e:
             raise CoolQDisconnectedException(self._('Unable to connect to CoolQ Client!'
                                                     'Error Message:\n{}').format(str(e)))
-        except cqhttp.Error as ex:
+        except CQHttp.Error as ex:
             api_ex = CoolQAPIFailureException(self._('CoolQ HTTP API encountered an error!\n'
                                                      'Status Code:{} '
                                                      'Return Code:{}').format(ex.status_code, ex.retcode))
@@ -1005,4 +1003,4 @@ class CoolQ(BaseClient):
         self.update_contacts_timer.cancel()
         self.check_status_timer.cancel()
         self.self_update_timer.cancel()
-        cherrypy.engine.exit()
+        self.event.set()
