@@ -15,7 +15,7 @@ from PIL import Image
 from cherrypy.process.wspbus import states
 from cqhttp import CQHttp
 from ehforwarderbot import Message, MsgType, Chat, coordinator, Status
-from ehforwarderbot.chat import SelfChatMember, ChatMember, SystemChatMember
+from ehforwarderbot.chat import SelfChatMember, ChatMember, SystemChatMember, PrivateChat
 from ehforwarderbot.exceptions import EFBMessageError, EFBOperationNotSupported, EFBChatNotFound
 from ehforwarderbot.message import MessageCommands, MessageCommand
 from ehforwarderbot.status import MessageRemoval
@@ -93,7 +93,7 @@ class CoolQ(BaseClient):
             remark = self.get_friend_remark(qq_uid)
             if context['message_type'] == 'private':
                 context['alias'] = remark
-                chat = self.chat_manager.build_efb_chat_as_private(context)
+                chat: PrivateChat = self.chat_manager.build_efb_chat_as_private(context)
                 # efb_msg.chat: EFBChat = self.chat_manager.build_efb_chat_as_user(context, True)
             else:
                 chat = self.chat_manager.build_efb_chat_as_group(context)
@@ -114,6 +114,8 @@ class CoolQ(BaseClient):
                         if member_info is not None:
                             context['alias'] = member_info['card']
                         author = self.chat_manager.build_or_get_efb_member(chat, context)
+                elif context['message_type'] == 'private':
+                    author = chat.other
                 else:
                     author = self.chat_manager.build_or_get_efb_member(chat, context)
             else:  # anonymous user in group
