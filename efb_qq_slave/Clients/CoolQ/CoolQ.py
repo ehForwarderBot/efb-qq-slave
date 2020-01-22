@@ -53,6 +53,7 @@ class CoolQ(BaseClient):
 
     friend_list = []
     friend_group = {}
+    friend_remark = {}
     group_list = []
     group_member_list: Dict[str, Dict[str, Any]] = {}
     discuss_list = []
@@ -89,14 +90,15 @@ class CoolQ(BaseClient):
             chat: Chat
             author: ChatMember
 
+            remark = self.get_friend_remark(qq_uid)
             if context['message_type'] == 'private':
+                context['alias'] = remark
                 chat = self.chat_manager.build_efb_chat_as_private(context)
                 # efb_msg.chat: EFBChat = self.chat_manager.build_efb_chat_as_user(context, True)
             else:
                 chat = self.chat_manager.build_efb_chat_as_group(context)
 
             if 'anonymous' not in context or context['anonymous'] is None:
-                remark = self.get_friend_remark(qq_uid)
                 if context['message_type'] == 'group':
                     if context['sub_type'] == 'notice':
                         context['event_description'] = self._("System Notification")
@@ -113,8 +115,6 @@ class CoolQ(BaseClient):
                             context['alias'] = member_info['card']
                         author = self.chat_manager.build_or_get_efb_member(chat, context)
                 else:
-                    if context['message_type'] == 'private' or context['message_type'] == 'discuss':
-                        context['alias'] = remark
                     author = self.chat_manager.build_or_get_efb_member(chat, context)
             else:  # anonymous user in group
                 author = self.chat_manager.build_efb_chat_as_anonymous_user(chat, context)
@@ -452,7 +452,7 @@ class CoolQ(BaseClient):
             # Disable nickname & remark comparsion for it's too time-consuming
             context = {'user_id': str(current_user['user_id']),
                        'nickname': txt,
-                       'alias': None}
+                       'alias': current_user['remark']}
             efb_chat = self.chat_manager.build_efb_chat_as_private(context)
             # efb_chat = self.chat_manager.build_efb_chat_as_user(context, True)
             users.append(efb_chat)
@@ -763,6 +763,11 @@ class CoolQ(BaseClient):
         self.friend_list = self.coolq_api_query('get_friend_list')
         if self.friend_list:
             self.logger.debug('Update friend list completed. Entries: %s', len(self.friend_list))
+            for friend in self.friend_list:
+                self.friend_remark[str(friend['user_id'])] = {
+                    'nickname': friend['nickname'],
+                    'remark': friend['remark']
+                }
         else:
             self.logger.warning('Failed to update friend list')
 
@@ -810,9 +815,9 @@ class CoolQ(BaseClient):
                 self.deliver_alert_to_master(self._('Failed to get friend groups'))
                 self.logger.exception(self._('Failed to get friend groups'))
                 return ''
-        if uid not in self.friend_group:
+        if str(uid) not in self.friend_remark:
             return None  # I don't think you have such a friend
-        return self.friend_group[str(uid)]
+        return self.friend_remark[str(uid)]['remark']
         '''
         for i in range(len(self.friend_list)):  # friend group
             for j in range(len(self.friend_list[i]['friend'])):
