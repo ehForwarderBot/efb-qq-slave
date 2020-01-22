@@ -67,7 +67,7 @@ class QQMessengerChannel(SlaveChannel):
         if not config_path.exists():
             return
         with config_path.open() as f:
-            self.config: Dict[str, Any] = yaml.load(f)
+            self.config: Dict[str, Any] = yaml.safe_load(f)
 
     def init_client_manager(self):
         self.QQClientMgr = ClientMgr(self.config['Client'], self.config, self)
