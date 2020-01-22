@@ -862,7 +862,7 @@ class CoolQ(BaseClient):
 
     def send_msg_to_master(self, context):
         self.logger.debug(repr(context))
-        if not coordinator.master:  # Master Channel not initialized
+        if not getattr(coordinator, 'master', None):  # Master Channel not initialized
             raise Exception(context['message'])
         chat = self.chat_manager.build_efb_chat_as_system_user(context)
         try:
