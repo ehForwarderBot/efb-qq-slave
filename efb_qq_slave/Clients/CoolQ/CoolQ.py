@@ -10,6 +10,7 @@ from gettext import translation
 from typing import Any, Dict, List, BinaryIO
 from functools import partial
 
+import aiocqhttp
 from PIL import Image
 from aiocqhttp import CQHttp
 from hypercorn.config import Config
@@ -668,7 +669,7 @@ class CoolQ(BaseClient):
         except RequestException as e:
             raise CoolQDisconnectedException(self._('Unable to connect to CoolQ Client!'
                                                     'Error Message:\n{}').format(str(e)))
-        except CQHttp.Error as ex:
+        except aiocqhttp.Error as ex:
             api_ex = CoolQAPIFailureException(self._('CoolQ HTTP API encountered an error!\n'
                                                      'Status Code:{} '
                                                      'Return Code:{}').format(ex.status_code, ex.retcode))
