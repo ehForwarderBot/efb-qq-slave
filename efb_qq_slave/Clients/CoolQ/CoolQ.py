@@ -103,7 +103,10 @@ class CoolQ(BaseClient):
                     if context['sub_type'] == 'notice':
                         context['event_description'] = self._("System Notification")
                         context['uid_prefix'] = 'group_notification'
-                        author = self.chat_manager.build_efb_chat_as_system_user(context)
+                        author = chat.add_system_member(
+                            name=context['event_description'],
+                            uid=ChatID("__{context[uid_prefix]}__".format(context=context))
+                        )
                     else:
                         if remark is not None:
                             context['nickname'] = remark
