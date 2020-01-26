@@ -512,7 +512,7 @@ class CoolQ(BaseClient):
         if msg.type in [MsgType.Text, MsgType.Link]:
             if msg.text == "kick`":
                 group_id = chat_type[1]
-                user_id = msg.target.author.uid.split('_')[1]
+                user_id = msg.target.author.uid
                 self.coolq_api_query("set_group_kick",
                                      group_id=group_id,
                                      user_id=user_id)
@@ -520,10 +520,9 @@ class CoolQ(BaseClient):
                 if isinstance(msg.target, Message):
                     max_length = 50
                     tgt_text = coolq_text_encode(process_quote_text(msg.target.text, max_length))
-                    user_type = msg.target.author.uid.split('_')
                     tgt_alias = ""
                     if chat_type[0] != 'private' and not isinstance(msg.target.author, SelfChatMember):
-                        tgt_alias += m.coolq_code_at_wrapper(user_type[1])
+                        tgt_alias += m.coolq_code_at_wrapper(msg.target.author.uid)
                     else:
                         tgt_alias = ""
                     msg.text = "%s%s\n\n%s" % (tgt_alias, tgt_text, coolq_text_encode(msg.text))
