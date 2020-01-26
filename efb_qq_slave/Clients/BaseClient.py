@@ -1,13 +1,13 @@
 # coding: utf-8
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, BinaryIO, Collection
 
-from ehforwarderbot import EFBMsg, EFBStatus, EFBChat
+from ehforwarderbot import Message, Status, Chat
+from ehforwarderbot.types import ChatID
 
 
 class BaseClient(ABC):
-
     client_name: str = "Example Client"
     client_id: str = "Client"
     client_config: Dict[str, Any]
@@ -29,11 +29,11 @@ class BaseClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def send_message(self, msg: EFBMsg):
+    def send_message(self, msg: 'Message') -> 'Message':
         raise NotImplementedError
 
     @abstractmethod
-    def send_status(self, status: 'EFBStatus'):
+    def send_status(self, status: 'Status'):
         raise NotImplementedError
 
     @abstractmethod
@@ -71,14 +71,23 @@ class BaseClient(ABC):
     def get_stranger_info(self, user_id):
         raise NotImplementedError
 
-    def get_group_info(self, group_id):
+    def get_group_info(self, group_id, no_cache=True):
         raise NotImplementedError
 
-    def get_chat_picture(self, chat):
+    def get_chat_picture(self, chat: 'Chat') -> BinaryIO:
         raise NotImplementedError
 
-    def get_chat(self, chat_uid: str, member_uid: Optional[str] = None) -> EFBChat:
+    def get_chat(self, chat_uid: ChatID) -> 'Chat':
         raise NotImplementedError
 
-    def get_chats(self):
+    def get_chats(self) -> Collection['Chat']:
+        raise NotImplementedError
+
+    def get_group_member_list(self, group_id, no_cache=True):
+        raise NotImplementedError
+
+    def poll(self):
+        raise NotImplementedError
+
+    def stop_polling(self):
         raise NotImplementedError

@@ -1,27 +1,30 @@
 # coding: utf-8
+import json
 import logging
 import os
+from typing import Optional, Dict, Any, BinaryIO, Collection
+
 import requests
-from typing import Optional, Dict, Any
 import yaml
-import json
+from ehforwarderbot import Message, Status, Chat, MsgType
+from ehforwarderbot import utils as efb_utils
+from ehforwarderbot.channel import SlaveChannel
+from ehforwarderbot.exceptions import EFBOperationNotSupported
+from ehforwarderbot.types import MessageID, InstanceID, ChatID
 from pkg_resources import parse_version
 
-from gettext import translation
-from ehforwarderbot import EFBChannel, ChannelType, EFBMsg, EFBStatus, EFBChat, MsgType
-from ehforwarderbot import utils as efb_utils
-from pkg_resources import resource_filename
 from . import __version__ as version
-
-from .Clients.BaseClient import BaseClient
 from .ClientMgr import ClientMgr
+from .Clients.BaseClient import BaseClient
 
 
-class QQMessengerChannel(EFBChannel):
+class QQMessengerChannel(SlaveChannel):
+    def get_message_by_id(self, chat: 'Chat', msg_id: MessageID) -> Optional['Message']:
+        raise EFBOperationNotSupported
+
     channel_name: str = "QQ Slave"
     channel_emoji: str = "🐧"
     channel_id = "milkice.qq"
-    channel_type: ChannelType = ChannelType.Slave
 
     __version__ = version.__version__
 
@@ -35,12 +38,10 @@ class QQMessengerChannel(EFBChannel):
     QQClient: BaseClient
     logger: logging.Logger = logging.getLogger(__name__)
 
-    def __init__(self, instance_id: str = None):
+    def __init__(self, instance_id: InstanceID = None):
         super().__init__(instance_id)
-        """
-        Load Config
-        """
         self.load_config()
+        self.init_client_manager()
 
     def check_updates(self):
         try:
@@ -63,10 +64,10 @@ class QQMessengerChannel(EFBChannel):
         Configuration file is in YAML format.
         """
         config_path = efb_utils.get_config_path(self.channel_id)
-        if not os.path.exists(config_path):
+        if not config_path.exists():
             return
-        with open(config_path) as f:
-            self.config: Dict[str, Any] = yaml.load(f)
+        with config_path.open() as f:
+            self.config: Dict[str, Any] = yaml.safe_load(f)
 
     def init_client_manager(self):
         self.QQClientMgr = ClientMgr(self.config['Client'], self.config, self)
@@ -76,29 +77,28 @@ class QQMessengerChannel(EFBChannel):
         """
         Init ClientMgr
         """
-        # not sure how it works
-        # todo Help Needed
-        self.init_client_manager()
+        self.QQClient.poll()
         pass
 
-    def send_message(self, msg: 'EFBMsg'):
+    def send_message(self, msg: 'Message') -> 'Message':
         return self.QQClient.send_message(msg)
 
-    def send_status(self, status: 'EFBStatus'):
+    def send_status(self, status: 'Status'):
         return self.QQClient.send_status(status)
 
-    def get_chat_picture(self, chat: 'EFBChat'):
+    def get_chat_picture(self, chat: 'Chat') -> BinaryIO:
         return self.QQClient.get_chat_picture(chat)
 
-    def get_chats(self):
+    def get_chats(self) -> Collection['Chat']:
         return self.QQClient.get_chats()
 
-    def get_chat(self, chat_uid: str, member_uid: Optional[str] = None):
-        return self.QQClient.get_chat(chat_uid, member_uid)
+    def get_chat(self, chat_uid: ChatID) -> 'Chat':
+        return self.QQClient.get_chat(chat_uid)
 
     def stop_polling(self):
         # not sure how it works
         # todo Help Needed
+        self.QQClient.stop_polling()
         pass
 
     def get_extra_functions(self):

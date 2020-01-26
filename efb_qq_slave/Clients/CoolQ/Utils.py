@@ -1,8 +1,6 @@
 # coding: utf-8
 import json
 import logging
-import os
-import shutil
 import ntpath
 import tempfile
 import urllib.request
@@ -11,9 +9,8 @@ from typing import *
 from urllib.error import URLError, HTTPError, ContentTooShortError
 from urllib.parse import quote
 
-import magic
 import requests
-from ehforwarderbot import EFBMsg, coordinator
+from ehforwarderbot import Message, coordinator
 from pkg_resources import resource_filename
 
 from .Exceptions import CoolQUnknownException
@@ -178,7 +175,7 @@ def cq_get_image(image_link: str) -> tempfile:  # Download image from QQ
         return file
 
 
-def async_send_messages_to_master(msg: EFBMsg):
+def async_send_messages_to_master(msg: Message):
     coordinator.send_message(msg)
     if msg.file:
         msg.file.close()
@@ -346,14 +343,14 @@ def download_group_avatar(uid: str):
 def get_friend_group_via_qq_show(cookie: str, csrf_token: str) -> Dict[str, str]:
     # This function won't check before execute, instead all the exceptions will be thrown
     cookie_arr = param_spliter(cookie)
-    url = "http://show.qq.com/cgi-bin/qqshow_user_friendgroup?g_tk={csrf_token}&omode=4" \
+    url = "https://show.qq.com/cgi-bin/qqshow_user_friendgroup?g_tk={csrf_token}&omode=4" \
         .format(csrf_token=csrf_token)
     ret = requests.get(url, cookies=cookie_arr)
     data = json.loads(ret.text)
     friend_group = {}
     for i in range(len(data['data']['group'])):  # friend group
         for j in range(len(data['data']['group'][i]['friend'])):
-            current_user = data['data']['group'][i]['friend'][j]
+            current_user = str(data['data']['group'][i]['friend'][j]['uin'])
             current_group = data['data']['group'][i]['name']
             friend_group[current_user] = current_group
     return friend_group
