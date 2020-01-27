@@ -451,9 +451,13 @@ class CoolQ(BaseClient):
         users = []
         for i in range(len(res)):  # friend group
             current_user = res[i]
-            txt = '[{}] {}'
-            txt = txt.format(self.friend_group[str(current_user['user_id'])], current_user['nickname'])
-
+            txt = ''
+            if str(current_user['user_id']) in self.friend_group:
+                txt = '[{}] {}'
+                txt = txt.format(self.friend_group[str(current_user['user_id'])], current_user['nickname'])
+            else:
+                txt = '{}'
+                txt = txt.format(current_user['nickname'])
             # Disable nickname & remark comparsion for it's too time-consuming
             context = {'user_id': str(current_user['user_id']),
                        'nickname': txt,
@@ -761,7 +765,7 @@ class CoolQ(BaseClient):
             if res:
                 for group in res:
                     for friend in group['friends']:
-                        relationship[friend['user_id']] = group['friend_group_name']
+                        relationship[str(friend['user_id'])] = str(group['friend_group_name'])
             self.friend_group = relationship
             # Use QShow API
             # cred = self.coolq_api_query('get_credentials')
@@ -817,16 +821,16 @@ class CoolQ(BaseClient):
             try:
                 self.update_friend_list()
             except CoolQAPIFailureException:
-                self.deliver_alert_to_master(self._('Failed to update friend remark name'))
+                # self.deliver_alert_to_master(self._('Failed to update friend remark name'))
                 self.logger.exception(self._('Failed to update friend remark name'))
                 return ''
-        if not self.friend_group:
-            try:
-                self.update_friend_group()
-            except CoolQAPIFailureException:
-                self.deliver_alert_to_master(self._('Failed to get friend groups'))
-                self.logger.exception(self._('Failed to get friend groups'))
-                return ''
+        # if not self.friend_group:
+        #     try:
+        #         self.update_friend_group()
+        #     except CoolQAPIFailureException:
+        #         self.deliver_alert_to_master(self._('Failed to get friend groups'))
+        #         self.logger.exception(self._('Failed to get friend groups'))
+        #         return ''
         if str(uid) not in self.friend_remark:
             return None  # I don't think you have such a friend
         return self.friend_remark[str(uid)]['remark']
