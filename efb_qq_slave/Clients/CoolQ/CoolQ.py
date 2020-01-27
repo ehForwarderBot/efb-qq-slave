@@ -754,16 +754,24 @@ class CoolQ(BaseClient):
         self.send_msg_to_master(context)
 
     def update_friend_group(self):
+        # Warning: Experimental API
         try:
-            cred = self.coolq_api_query('get_credentials')
-            cookies = cred['cookies']
-            csrf_token = cred['csrf_token']
-            self.friend_group = get_friend_group_via_qq_show(cookies, csrf_token)
+            res = self.coolq_api_query('_get_friend_list')
+            relationship = {}
+            if res:
+                for group in res:
+                    for friend in group['friends']:
+                        relationship[friend['user_id']] = group['friend_group_name']
+            self.friend_group = relationship
+            # Use QShow API
+            # cred = self.coolq_api_query('get_credentials')
+            # cookies = cred['cookies']
+            # csrf_token = cred['csrf_token']
+            # self.friend_group = get_friend_group_via_qq_show(cookies, csrf_token)
         except Exception as e:
             self.logger.warning('Failed to update friend group' + str(e))
 
     def update_friend_list(self):
-        # Warning: Experimental API
         self.friend_list = self.coolq_api_query('get_friend_list')
         if self.friend_list:
             self.logger.debug('Update friend list completed. Entries: %s', len(self.friend_list))
