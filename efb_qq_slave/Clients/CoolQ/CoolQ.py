@@ -66,6 +66,9 @@ class CoolQ(BaseClient):
     check_status_timer: threading.Timer
     cherryServer: Server
 
+    can_send_image: bool = False
+    can_send_voice: bool = False
+
     def __init__(self, client_id: str, config: Dict[str, Any], channel):
         super().__init__(client_id, config)
         self.client_config = config[self.client_id]
@@ -590,6 +593,10 @@ class CoolQ(BaseClient):
                 else:
                     text = '[Image]'
             else:
+                if not self.can_send_image:
+                    self.check_features()  # Force checking features
+                    raise EFBOperationNotSupported(self._("Unable to send image now. Please check your CoolQ version "
+                                                          "or retry later"))
                 if msg.type != MsgType.Sticker:
                     text += m.coolq_code_image_wrapper(msg.file, msg.path)
                 else:
@@ -611,6 +618,10 @@ class CoolQ(BaseClient):
                 self.coolq_send_message(chat_type[0], chat_type[1], msg.text)
         # todo More MsgType Support
         elif msg.type is MsgType.Voice:
+            if not self.can_send_voice:
+                self.check_features()  # Force checking features
+                raise EFBOperationNotSupported(self._("Unable to send voice now. Please check your CoolQ version "
+                                                      " and install CoolQ audio library or retry later"))
             text = m.coolq_voice_image_wrapper(msg.file, msg.path)
             msg.uid = self.coolq_send_message(chat_type[0], chat_type[1], text)
             if msg.text:
@@ -753,7 +764,7 @@ class CoolQ(BaseClient):
                 self.is_connected = True
                 self.is_logged_in = True
                 self.repeat_counter = 0
-
+        self.check_features()
         if t_event is not None and not t_event.is_set():
             self.check_status_timer = threading.Timer(interval, self.check_status_periodically, [t_event])
             self.check_status_timer.start()
@@ -1036,3 +1047,7 @@ class CoolQ(BaseClient):
         self.check_status_timer.cancel()
         self.self_update_timer.cancel()
         cherrypy.engine.exit()
+
+    def check_features(self):
+        self.can_send_image = self.coolq_api_query('can_send_image')['yes']
+        self.can_send_voice = self.coolq_api_query('can_send_record')['yes']
