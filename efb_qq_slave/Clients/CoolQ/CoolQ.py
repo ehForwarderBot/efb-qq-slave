@@ -79,7 +79,7 @@ class CoolQ(BaseClient):
         self.is_logged_in = False
         self.msg_decorator = QQMsgProcessor(instance=self)
 
-        @self.coolq_bot.on_message()
+        @self.coolq_bot.on_message
         def handle_msg(context):
             self.logger.debug(repr(context))
             msg_element = context['message']
