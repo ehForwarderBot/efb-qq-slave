@@ -171,6 +171,14 @@ class QQMsgProcessor:
         # there's no need to escape the special characters
         return '[CQ:image,file=base64://{}]'.format(encoded_string.decode())
 
+    def coolq_voice_image_wrapper(self, file, file_path):
+        if file.closed:
+            file = open(file.name)
+        encoded_string = base64.b64encode(file.read())
+        # Since base64 doesn't contain characters which isn't allowed in CQ Code,
+        # there's no need to escape the special characters
+        return '[CQ:record,file=base64://{}]'.format(encoded_string.decode())
+
     def qq_file_after_wrapper(self, data):
         efb_msg = Message()
         efb_msg.file = data['file']

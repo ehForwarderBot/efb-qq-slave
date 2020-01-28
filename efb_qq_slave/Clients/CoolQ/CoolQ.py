@@ -610,6 +610,11 @@ class CoolQ(BaseClient):
             if msg.text:
                 self.coolq_send_message(chat_type[0], chat_type[1], msg.text)
         # todo More MsgType Support
+        elif msg.type is MsgType.Voice:
+            text = m.coolq_voice_image_wrapper(msg.file, msg.path)
+            msg.uid = self.coolq_send_message(chat_type[0], chat_type[1], text)
+            if msg.text:
+                self.coolq_send_message(chat_type[0], chat_type[1], msg.text)
         return msg
 
     def call_msg_decorator(self, msg_type: str, *args):
