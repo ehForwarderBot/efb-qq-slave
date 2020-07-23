@@ -542,8 +542,10 @@ class CoolQ(BaseClient):
                 if self.client_config['air_option']['upload_to_smms']:
                     text = '[Image] {}'
                     smms_data = None
+                    smms_email = self.client_config['air_option']['smms_email']
+                    smms_password = self.client_config['air_option']['smms_password']
                     try:
-                        smms_data = upload_image_smms(msg.file, msg.path)
+                        smms_data = upload_image_smms(msg.file, msg.path, smms_email, smms_password)
                     except CoolQUnknownException as e:
                         text = '[Image]'
                         self.deliver_alert_to_master(self._('Failed to upload the image to sm.ms! Return Msg: ')
