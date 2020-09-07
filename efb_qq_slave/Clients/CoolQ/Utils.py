@@ -633,12 +633,25 @@ def coolq_para_encode(text: str):  # Escape special characters for CQ Code param
     return text
 
 
-def upload_image_smms(file, path):  # Upload image to sm.ms and return the link
-    UPLOAD_URL = 'https://sm.ms/api/upload'
+def upload_image_smms(file, path, email, password):  # Upload image to sm.ms and return the link
+    UPLOAD_URL_TOKEN = 'https://sm.ms/api/v2/token'
+    UPLOAD_URL_IMAGE = 'https://sm.ms/api/v2/upload'
+    UPLOAD_LOGIN = {'username': email,
+                    'password': password}
     UPLOAD_PARAMS = {'format': 'json', 'ssl': True}
+    resp = requests.post(UPLOAD_URL_TOKEN, params=UPLOAD_LOGIN)
+    status = json.loads(resp.text)
+    if status['code'] == 'success':
+        token = status['data']['token']
+        UPLOAD_HEADER = {'Authorization': token}
+    else:
+        logging.getLogger(__name__).warning(
+                        'WARNING: {}'.format(status['msg']))
+        raise CoolQUnknownException(status['msg'])
     with open(path, 'rb') as f:
         files = {'smfile': f.read()}
-        resp = requests.post(UPLOAD_URL, files=files, params=UPLOAD_PARAMS)
+        resp = requests.post(UPLOAD_URL_IMAGE, files=files, headers=UPLOAD_HEADER,
+                             params=UPLOAD_PARAMS)
         status = json.loads(resp.text)
         if status['code'] == 'success':
             logging.getLogger(__name__).debug('INFO: upload success! url at {}'.format(status['data']['url']))
