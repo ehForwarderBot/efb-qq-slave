@@ -1,4 +1,5 @@
 # coding: utf-8
+import re
 import json
 import logging
 import ntpath
@@ -795,3 +796,22 @@ def download_voice(filename: str, api_root: str, access_token: str):
         raise EOFError('File downloaded is Empty')
     file.seek(0)
     return file
+
+
+def get_stranger_info_via_qzone(uin: str):
+    pattern = re.compile(r"\((.*)\)")
+    resp = requests.get("https://users.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg?uins={id}".format(id=uin))
+    # Assume that this API is always available
+    data = pattern.findall(resp.text)
+    if not data:
+        return ""
+    try:
+        data = json.loads(data[0])
+        ret = {
+            "uin": uin,
+            "nickname": data[uin][6],
+            "avatar_url": data[uin][0]
+        }
+        return ret
+    except:
+        return ""

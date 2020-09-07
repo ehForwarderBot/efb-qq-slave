@@ -30,7 +30,7 @@ from .Exceptions import CoolQDisconnectedException, CoolQAPIFailureException, Co
 from .MsgDecorator import QQMsgProcessor
 from .Utils import qq_emoji_list, async_send_messages_to_master, process_quote_text, coolq_text_encode, \
     upload_image_smms, download_file_from_qzone, download_user_avatar, download_group_avatar, \
-    get_friend_group_via_qq_show, upload_image_vim_cn, upload_image_mi, upload_image_sogou
+    get_friend_group_via_qq_show, upload_image_vim_cn, upload_image_mi, upload_image_sogou, get_stranger_info_via_qzone
 from ..BaseClient import BaseClient
 from ... import QQMessengerChannel
 
@@ -405,7 +405,8 @@ class CoolQ(BaseClient):
         return 'Done'
 
     def get_stranger_info(self, user_id):
-        return self.coolq_api_query('get_stranger_info', user_id=user_id, no_cache=False)
+        return get_stranger_info_via_qzone(user_id)
+        # return self.coolq_api_query('get_stranger_info', user_id=user_id, no_cache=False)
         # return self.coolq_bot.get_stranger_info(user_id=user_id, no_cache=False)
 
     def get_login_info(self) -> Dict[Any, Any]:
