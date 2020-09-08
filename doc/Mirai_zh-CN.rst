@@ -58,6 +58,7 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
         # 可选，上报数据签名密钥, 默认为空
         secret: ""
 
+
     其中需要修改的为 QQ 号及 accessToken，accessToken 需与 EQS 中的配置一致
 
 4. 配置 EQS 端
@@ -75,6 +76,7 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
            is_pro: true                      # 若为酷Q Pro则为true，反之为false
            air_option:                       # 包含于 air_option 的配置选项仅当 is_pro 为 false 时才有效
                upload_to_smms: true          # 将来自 EFB主端(通常是Telegram) 的图片上传到 sm.ms 服务器并以链接的形式发送到 QQ 端
+
 
     需要注意的是其实 port 下面的配置都是无效的，只是为了兼容酷Q，is_pro 请保持为 true
 
