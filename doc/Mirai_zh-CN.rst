@@ -59,7 +59,7 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
         secret: ""
 
 
-    其中需要修改的为 QQ 号及 accessToken，accessToken 需与 EQS 中的配置一致
+其中需要修改的为 QQ 号及 accessToken，accessToken 需与 EQS 中的配置一致
 
 4. 配置 EQS 端
     与酷Q版的配置几乎完全一致，除了要确认下 API Root 的地址
@@ -78,6 +78,6 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
                upload_to_smms: true          # 将来自 EFB主端(通常是Telegram) 的图片上传到 sm.ms 服务器并以链接的形式发送到 QQ 端
 
 
-    需要注意的是其实 port 下面的配置都是无效的，只是为了兼容酷Q，is_pro 请保持为 true
+需要注意的是其实 port 下面的配置都是无效的，只是为了兼容酷Q，is_pro 请保持为 true
 
 5. 再次启动 Mirai, 而后启动 EQS 即可
