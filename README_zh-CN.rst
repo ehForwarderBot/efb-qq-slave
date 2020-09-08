@@ -51,6 +51,7 @@ EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 ------------------------------
 
 酷Q: `酷Q 客户端配置教程 <doc/CoolQ_zh-CN.rst>`_
+Mirai: `Mirai 客户端配置教程 <doc/Mirai_zh-CN.rst>`_
 
 FAQs
 ------------------------------
