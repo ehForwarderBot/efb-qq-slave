@@ -777,6 +777,8 @@ class CoolQ(BaseClient):
         self.send_msg_to_master(context)
 
     def update_friend_group(self):
+        # Mirai doesn't support retrieving friend group, neither does get_credentials unfortunately
+        return {}
         # Warning: Experimental API
         try:
             # res = self.coolq_api_query('_get_friend_list')
