@@ -462,7 +462,7 @@ class CoolQ(BaseClient):
             else:
                 txt = '{}'
                 txt = txt.format(current_user['nickname'])
-            # Disable nickname & remark comparsion for it's too time-consuming
+            # Disable nickname & remark comparison for it's too time-consuming
             context = {'user_id': str(current_user['user_id']),
                        'nickname': txt,
                        'alias': current_user['remark']}
@@ -779,18 +779,18 @@ class CoolQ(BaseClient):
     def update_friend_group(self):
         # Warning: Experimental API
         try:
-            res = self.coolq_api_query('_get_friend_list')
-            relationship = {}
-            if res:
-                for group in res:
-                    for friend in group['friends']:
-                        relationship[str(friend['user_id'])] = str(group['friend_group_name'])
-            self.friend_group = relationship
+            # res = self.coolq_api_query('_get_friend_list')
+            # relationship = {}
+            # if res:
+            #     for group in res:
+            #         for friend in group['friends']:
+            #             relationship[str(friend['user_id'])] = str(group['friend_group_name'])
+            # self.friend_group = relationship
             # Use QShow API
-            # cred = self.coolq_api_query('get_credentials')
-            # cookies = cred['cookies']
-            # csrf_token = cred['csrf_token']
-            # self.friend_group = get_friend_group_via_qq_show(cookies, csrf_token)
+            cred = self.coolq_api_query('get_credentials')
+            cookies = cred['cookies']
+            csrf_token = cred['csrf_token']
+            self.friend_group = get_friend_group_via_qq_show(cookies, csrf_token)
         except Exception as e:
             self.logger.warning('Failed to update friend group' + str(e))
 

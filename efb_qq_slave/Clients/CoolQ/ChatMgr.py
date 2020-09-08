@@ -72,13 +72,13 @@ class ChatManager:
 
     def build_efb_chat_as_private(self, context):
         uid = context['user_id']
-        if 'nickname' not in context:
+        if 'sender' not in 'nickname' or 'nickname' not in context['sender']:
             i: dict = self.channel.QQClient.get_stranger_info(uid)
             chat_name = ""
             if i:
                 chat_name = i['nickname']
         else:
-            chat_name = context['nickname']
+            chat_name = context['sender']['nickname']
         efb_chat = PrivateChat(channel=self.channel,
                                uid='private' + '_' + str(uid),
                                name=str(chat_name),

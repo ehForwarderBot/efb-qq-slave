@@ -58,6 +58,7 @@ Clients:
 ------------------------------
 
 CoolQ: `CoolQ Client Configuration <doc/CoolQ_en-US.rst>`_
+Mirai: `Mirai Client Configuration <doc/Mirai_en-US.rst>`_
 
 FAQs
 ------------------------------
