@@ -16,6 +16,7 @@ from .Utils import cq_get_image, download_voice
 
 class QQMsgProcessor:
     inst: CoolQ
+    logger: logging.Logger = logging.getLogger(__name__)
 
     def __init__(self, instance: CoolQ):
         self.inst = instance
@@ -40,6 +41,7 @@ class QQMsgProcessor:
         if isinstance(mime, bytes):
             mime = mime.decode()
         efb_msg.filename = data['file'] if 'file' in data else efb_msg.file.name
+        efb_msg.filename += '.' + str(mime).split('/')[1]
         efb_msg.path = efb_msg.file.name
         efb_msg.mime = mime
         if "gif" in mime:
