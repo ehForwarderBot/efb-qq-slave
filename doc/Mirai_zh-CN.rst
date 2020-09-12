@@ -20,7 +20,7 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
 
 3. 按下 Ctrl-C 停止 Mirai
 
-4. 编辑 ``plugin/settings.yml`` 为如下内容
+4. 编辑 ``plugins/setting.yml`` 为如下内容
 
 .. code:: yaml
 
