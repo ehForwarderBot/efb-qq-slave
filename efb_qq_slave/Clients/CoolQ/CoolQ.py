@@ -801,6 +801,8 @@ class CoolQ(BaseClient):
         if self.friend_list:
             self.logger.debug('Update friend list completed. Entries: %s', len(self.friend_list))
             for friend in self.friend_list:
+                if(friend['remark']==''):
+                    friend['remark'] = friend['nickname']
                 self.friend_remark[str(friend['user_id'])] = {
                     'nickname': friend['nickname'],
                     'remark': friend['remark']
