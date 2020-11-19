@@ -52,7 +52,7 @@ At this stage, please follow the following steps to install this package and sta
 
    The detailed configuration steps for various QQ Clients are as follows.
 
-**Currently efb-qq-slave only supports CoolQ Client**
+**Currently efb-qq-slave only supports CoolQ Client Mode**
 
 Clients:
 ------------------------------
