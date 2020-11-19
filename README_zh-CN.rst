@@ -29,6 +29,7 @@ EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 现阶段，请按照以下步骤安装此软件包并开始测试。
 
 1. 安装依赖及 EH forwarder bot
+
    ``pip3 install ehforwarderbot``
 
 2. pip 安装 efb-qq-slave 及 efb-telegram-master
