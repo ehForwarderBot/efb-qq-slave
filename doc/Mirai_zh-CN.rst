@@ -50,7 +50,7 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
         # 可选，HTTP API服务器监听端口, 5700
         port: 5700
         # *可选，访问口令
-        accessToken: ""
+        accessToken: "ac0f790e1fb74ebcaf45da77a6f9de47"
         # 可选，事件及数据上报URL, 默认为空, 即不上报
         postUrl: "http://127.0.0.1:8000"
         # 可选，上报消息格式，string 为字符串格式，array 为数组格式, 默认为string
@@ -67,15 +67,15 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
 .. code:: yaml
 
     Client: CoolQ                         # 指定要使用的 QQ 客户端（此处为CoolQ）
-       CoolQ:
-           type: HTTP                        # 指定 efb-qq-slave 与 酷Q 通信的方式 现阶段仅支持HTTP
-           access_token: ac0f790e1fb74ebcaf45da77a6f9de47
-           api_root: http://127.0.0.1:5700/  # 酷Q API接口地址/端口
-           host: 127.0.0.1                   # efb-qq-slave 所监听的地址用于接收消息
-           port: 8000                        # 同上
-           is_pro: true                      # 若为酷Q Pro则为true，反之为false
-           air_option:                       # 包含于 air_option 的配置选项仅当 is_pro 为 false 时才有效
-               upload_to_smms: true          # 将来自 EFB主端(通常是Telegram) 的图片上传到 sm.ms 服务器并以链接的形式发送到 QQ 端
+    CoolQ:
+       type: HTTP                        # 指定 efb-qq-slave 与 酷Q 通信的方式 现阶段仅支持HTTP
+       access_token: ac0f790e1fb74ebcaf45da77a6f9de47
+       api_root: http://127.0.0.1:5700/  # cqhttp-Mirai 的API接口地址/端口
+       host: 127.0.0.1                   # efb-qq-slave 所监听的地址用于接收消息
+       port: 8000                        # 同上
+       is_pro: true                      # 保持为默认
+       air_option:                       # 包含于 air_option 的配置选项仅当 is_pro 为 false 时才有效
+           upload_to_smms: true          # 将来自 EFB主端(通常是Telegram) 的图片上传到 sm.ms 服务器并以链接的形式发送到 QQ 端
 
 
 需要注意的是其实 port 下面的配置都是无效的，只是为了兼容酷Q，is_pro 请保持为 true
