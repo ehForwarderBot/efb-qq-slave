@@ -7,7 +7,7 @@ EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 
 **Channel ID**: ``milkice.qq``
 
-**警告：该项目重构中，目前仅支持基本的操作（消息的收发），重构后的版本预计在2020年2月中旬发布，非常欢迎贡献代码**
+**警告：该项目重构中，目前仅支持基本的操作（消息的收发），重构后的版本预计在2021年2月中旬发布，非常欢迎贡献代码**
 
 `English Documentation <README.rst>`_
 
