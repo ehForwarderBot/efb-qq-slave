@@ -10,17 +10,21 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
 
 所需依赖及条件
 
-1. JRE 1.8+
+1. JDK 11+
 
 步骤：
 
-1. 下载 `cqhttp-mirai Embedded 版 <https://github.com/yyuueexxiinngg/cqhttp-mirai/releases>`_
+1. 使用 `此项目 <https://github.com/project-mirai/mirai-login-solver-selenium> 的方法获得 device.json
 
-2. 执行 ``java -jar cqhttp-mirai-*-embedded-all.jar``
+2. 下载 `Onebot Kotlin 版 <https://github.com/yyuueexxiinngg/onebot-kotlin/releases>`_
 
-3. 按下 Ctrl-C 停止 Mirai
+3. 将步骤2中获取的 ``device.json`` 复制到 Onebot Kotlin jar的同目录
 
-4. 编辑 ``plugins/setting.yml`` 为如下内容
+4. 执行 ``java -jar onebot-kotlin-*.jar``
+
+5. 按下 Ctrl-C 停止 Mirai
+
+6. 编辑 ``config/OneBot/setting.yml`` 为如下内容
 
 .. code:: yaml
 
@@ -80,4 +84,4 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
 
 需要注意的是其实 port 下面的配置都是无效的，只是为了兼容酷Q，is_pro 请保持为 true
 
-5. 再次启动 Mirai, 而后启动 EQS 即可
+5. 再次启动 Mirai (如有报错请忽略) , 而后完整启动 EQS 后 , 重启 Mirai 即可
