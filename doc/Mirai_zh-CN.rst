@@ -25,42 +25,26 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
 
 6. 编辑 ``config/OneBot/setting.yml`` 为如下内容
 
-.. code:: yaml
+.. code:: yml
 
-    # Debug日志输出选项
-    debug: false
-    # 下载图片/语音时使用的Proxy, 配置后, 发送图片/语音时指定`proxy=1`以通过Proxy下载, 如[CQ:image,proxy=1,url=http://***]
-    # 支持HTTP及Sock两种Proxy, 设置举例 proxy: "http=http://127.0.0.1:8888", proxy : "sock=127.0.0.1:1088"
-    proxy: ""
-    # *要进行配置的QQ号 (Mirai支持多帐号登录, 故需要对每个帐号进行单独设置)
-    '1234567890':
-      # 是否缓存所有收到的图片, 默认为否 (仅包含图片信息, 不包含图片本身,  < 0.5KB)
-      cacheImage: false
-      # 是否缓存所有收到的语音, 默认为否 (将下载完整语音进行保存)
-      cacheRecord: false
-      # 心跳包相关配置
-      heartbeat:
-        # 是否发送心跳包, 默认为否
-        enable: false
-        # 心跳包发送间隔, 默认为 15000毫秒
-        interval: 15000
-      # HTTP 相关配置
-      http:
-        # 可选，是否启用HTTP API服务器, 默认为不启用, 此项开始与否跟postUrl无关
-        enable: true
-        # 可选，HTTP API服务器监听地址, 默认为0.0.0.0
-        host: 127.0.0.1
-        # 可选，HTTP API服务器监听端口, 5700
-        port: 5700
-        # *可选，访问口令
-        accessToken: "ac0f790e1fb74ebcaf45da77a6f9de47"
-        # 可选，事件及数据上报URL, 默认为空, 即不上报
-        postUrl: "http://127.0.0.1:8000"
-        # 可选，上报消息格式，string 为字符串格式，array 为数组格式, 默认为string
-        postMessageFormat: array
-        # 可选，上报数据签名密钥, 默认为空
-        secret: ""
-
+    proxy: ''
+    bots:
+      123456789:
+        cacheImage: false
+        cacheRecord: false
+        heartbeat:
+          enable: false
+          interval: 1500
+        http:
+          enable: true
+          host: 127.0.0.1
+          port: 5700
+          accessToken: ac0f790e1fb74ebcaf45da77a6f9de47
+          postUrl: 'http://127.0.0.1:8000'
+          postMessageFormat: array
+          secret: ''
+          # 上报超时时间, 单位毫秒, 须大于0才会生效
+          timeout: 0
 
 其中需要修改的为 QQ 号及 accessToken，accessToken 需与 EQS 中的配置一致
 
