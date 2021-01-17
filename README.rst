@@ -18,6 +18,8 @@ EFB QQ Slave Channel
 
 **Channel ID**: ``milkice.qq``
 
+*Warning: This project is under heavy refactoring and only the basic operation is supported at this moment. The new project is expected to be completed in mid-Feb 2020. Any contributions are welcomed!*
+
 `中文文档 <README_zh-CN.rst>`_
 
 *******************************************
