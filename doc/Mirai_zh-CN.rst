@@ -55,14 +55,14 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
         http:
           enable: true
 
-上述代码中 **enable** 必须为 **true** 否则无法正常开启EFB
+上述配置文件中 **enable** 必须为 **true** 否则将无法正常开启EFB
 
 7. 配置 EQS 端
-    与酷Q版的配置几乎完全一致，除了要确认下 API Root 的地址
+    与酷Q版的配置几乎完全一致，除了要确认下 API Root 地址 和 efb-qq-slave 所监听的地址
 
 .. code:: yaml
 
-    Client: CoolQ                         # 指定要使用的 QQ 客户端（此处为CoolQ）
+    Client: CoolQ                         # 指定要使用的 QQ 客户端（此处为CoolQ模式）
     CoolQ:
        type: HTTP                        # 指定 efb-qq-slave 与 酷Q 通信的方式 现阶段仅支持HTTP
        access_token: ac0f790e1fb74ebcaf45da77a6f9de47
