@@ -18,6 +18,8 @@ EFB QQ Slave Channel
 
 **Channel ID**: ``milkice.qq``
 
+*Warning: This project is under heavy refactoring and only the basic operation is supported at this moment. The new project is expected to be completed in mid-Feb 2021. Any contributions are welcomed!*
+
 `中文文档 <README_zh-CN.rst>`_
 
 *******************************************
@@ -52,7 +54,7 @@ At this stage, please follow the following steps to install this package and sta
 
    The detailed configuration steps for various QQ Clients are as follows.
 
-**Currently efb-qq-slave only supports CoolQ Client**
+**Currently efb-qq-slave only supports CoolQ Client Mode**
 
 Clients:
 ------------------------------

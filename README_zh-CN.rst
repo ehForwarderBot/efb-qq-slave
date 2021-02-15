@@ -7,6 +7,8 @@ EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 
 **Channel ID**: ``milkice.qq``
 
+**警告：该项目重构中，目前仅支持基本的操作（消息的收发），重构后的版本预计在2021年2月中旬发布，非常欢迎贡献代码**
+
 `English Documentation <README.rst>`_
 
 ***********************
@@ -28,24 +30,30 @@ EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 
 现阶段，请按照以下步骤安装此软件包并开始测试。
 
-1. 安装依赖及 EH forwarder bot.
+1. 安装依赖及 EH forwarder bot
 
-2. pip 安装 efb-qq-slave
+   ``pip3 install ehforwarderbot``
 
-   ``pip3 install efb-qq-slave``
+2. pip 安装 efb-qq-slave 及 efb-telegram-master
 
-3. 在当前配置文件夹 (Profile) ``<profile directory>/config.yaml`` 的 ``config.yaml`` 中启用 ``milkice.qq`` 
+   ``pip3 install -U git+https://github.com/milkice233/efb-qq-slave``
+   
+   ``pip3 install efb-telegram-master``
+
+3. 配置EFB在当前配置文件夹 (Profile) ``<profile directory>/config.yaml`` 的 ``config.yaml`` 中启用主端 ``blueset.telegram`` 与附端 ``milkice.qq``  
 
    当前配置文件夹的位置会根据用户的设定而改变。
 
    **(EFB 2.0.0a1 中，默认的配置文件夹位于**
    ``~/.ehforwarderbot/profiles/default`` **)**
 
-4. 为 ``milkice.qq`` EQS从端 创建配置文件 ``config.yaml`` 来指定 QQ 客户端
+4. 配置 efb-telegram-master ，详情请见 `这里 <https://github.com/blueset/efb-telegram-master>`_
+
+5. 为 ``milkice.qq`` EQS从端 创建配置文件 ``config.yaml`` 来指定 QQ 客户端
 
    各种QQ客户端的详细配置步骤如下。
 
-**目前efb-qq-slave仅支持酷Q 客户端**
+**目前 efb-qq-slave 仅支持 酷Q 客户端模式**
 
 客户端们:
 ------------------------------
@@ -60,11 +68,11 @@ FAQs
 
 * Q - 如何在 主端(Telegram) 撤回消息？
 
-  A - 如果 QQ 客户端支持该操作，请编辑该消息并在该消息前段加上 ``rm``` 字样即可在QQ端撤回该消息 同时请注意发出的消息仅能在发出后2分钟内撤回
+  A - 如果 QQ 客户端支持该操作，请回复该消息 ``/rm`` 即可在QQ端撤回该消息 同时请注意发出的消息仅能在发出后2分钟内撤回
   
 * Q - 如何在 主端(Telegram) 编辑消息？
   
-  A - 直接使用 Telegram 的编辑消息功能即可
+  A - 直接使用 Telegram 的编辑消息功能即可 (目前Mirai客户端暂不支持)
 
 注意事项
 ------------------------------
