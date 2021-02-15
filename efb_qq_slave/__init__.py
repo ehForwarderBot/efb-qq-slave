@@ -74,11 +74,7 @@ class QQMessengerChannel(SlaveChannel):
         self.QQClient = self.QQClientMgr.get_client()
 
     def poll(self):
-        """
-        Init ClientMgr
-        """
         self.QQClient.poll()
-        pass
 
     def send_message(self, msg: 'Message') -> 'Message':
         return self.QQClient.send_message(msg)
@@ -96,8 +92,6 @@ class QQMessengerChannel(SlaveChannel):
         return self.QQClient.get_chat(chat_uid)
 
     def stop_polling(self):
-        # not sure how it works
-        # todo Help Needed
         self.QQClient.stop_polling()
         pass
 
@@ -113,8 +107,5 @@ class QQMessengerChannel(SlaveChannel):
     def __getattr__(self, name):
         def method(*args, **kwargs):
             func = getattr(self.QQClient, name)
-            if kwargs:
-                return func(**kwargs)
-            else:
-                return func()
+            func(*args, **kwargs)
         return method
