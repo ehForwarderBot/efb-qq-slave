@@ -13,17 +13,19 @@ Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在
 
 步骤：
 
-1. 使用 `此项目 <https://github.com/project-mirai/mirai-login-solver-selenium/blob/master/README.md>`_ 的方法获得 device.json
+1. 安装 efb-qq-plugin-mirai ``pip3 install git+https://github.com/milkice233/efb-qq-plugin-mirai``
 
-2. 下载 `Onebot Kotlin 版 <https://github.com/yyuueexxiinngg/onebot-kotlin/releases>`_  （此版本不需要安装Kotlin）
+2. 使用 `此项目 <https://github.com/project-mirai/mirai-login-solver-selenium/blob/master/README.md>`_ 的方法获得 device.json
 
-3. 将 步骤1 中获取的 ``device.json`` 复制到 Onebot Kotlin 的目录
+3. 下载 `Onebot Kotlin 版 <https://github.com/yyuueexxiinngg/onebot-kotlin/releases>`_  （此版本不需要安装Kotlin）
 
-4. 执行 ``java -jar onebot-kotlin-*.jar``
+4. 将 步骤1 中获取的 ``device.json`` 复制到 Onebot Kotlin 的目录
 
-5. 按下 Ctrl-C 停止 Mirai
+5. 执行 ``java -jar onebot-kotlin-*.jar``
 
-6. 编辑 ``config/OneBot/setting.yml`` 为如下内容
+6. 按下 Ctrl-C 停止 Mirai
+
+7. 编辑 ``config/OneBot/settings.yml`` 为如下内容
 
 .. code:: yml
 

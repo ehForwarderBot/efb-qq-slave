@@ -58,8 +58,11 @@ EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 客户端们:
 ------------------------------
 
-酷Q: `酷Q 客户端配置教程 <doc/CoolQ_zh-CN.rst>`_
+酷Q: `酷Q API通用配置教程 <doc/CoolQ_zh-CN.rst>`_
+
 Mirai: `Mirai 客户端配置教程 <doc/Mirai_zh-CN.rst>`_
+
+IOTBot: `IOTBot 客户端配置教程 <doc/IOT_zh-CN.rst>`_
 
 FAQs
 ------------------------------
