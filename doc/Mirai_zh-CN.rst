@@ -10,6 +10,8 @@ Mirai 模式(Mirai-http-api):
 
 1. JDK 11+
 
+2. Python 3.8+
+
 步骤：
 
 **由于 Mirai 还处于活跃开发中，Mirai 的安装步骤可能随时发生调整，具体请以官方文档为准**
