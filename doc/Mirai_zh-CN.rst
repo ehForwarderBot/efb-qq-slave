@@ -20,7 +20,37 @@ Mirai 模式(Mirai-http-api):
 
 3. 安装完 MCL 和 mirai 后请使用 MCL 安装 `mirai-api-http <https://github.com/project-mirai/mirai-api-http>`_，现阶段的安装命令为 ``./mcl --update-package net.mamoe:mirai-api-http --channel stable --type plugin``
 
-4. 编辑 ``config/MiraiApiHttp/setting.yml`` 配置文件，其中需要留意的是需要自己设置一个 authKey，可使用随机密码生成器生成一个足够长的字符串，具体参见 `此处 <https://github.com/project-mirai/mirai-api-http#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8>`_
+4. 编辑 ``config/MiraiApiHttp/setting.yml`` 配置文件，其中需要留意的是需要自己设置一个 authKey，可使用随机密码生成器生成一个足够长的字符串，具体参见 `此处 <https://github.com/project-mirai/mirai-api-http#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8>`_ ，以下是样例
+
+.. code:: yml
+
+    cors:
+      - '*'
+    host: 127.0.0.1
+    port: 8080
+    authKey: xxxxxx        # 这里随机生成一个字符串
+    cacheSize: 4096
+    enableWebsocket: true  # 确保 Websocket 已经启用
+    report:
+      enable: true         # 确保这里是 true 用来启用消息上报
+      groupMessage:
+        report: true
+      friendMessage:
+        report: true
+      tempMessage:
+        report: true
+      eventMessage:
+        report: true
+      destinations: []
+      extraHeaders: {}
+
+    heartbeat:
+      enable: false
+      delay: 1000
+      period: 15000
+      destinations: []
+      extraBody: {}
+      extraHeaders: {}
 
 5. 配置 EQS 端（EQS 配置文件一般位于 ``~/.ehforwarderbot/profiles/default/milkice.qq/config.yaml``），内容如下：
 
