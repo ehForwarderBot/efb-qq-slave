@@ -65,7 +65,7 @@ Mirai 模式(Mirai-http-api):
       port: 8080              # Mirai HTTP API 监听端口，一般是 8080
       authKey: "28nrq0vnj02y" # 这里填入在配置 Mirai API HTTP 时生成的 authKey
 
-6. 使用 mcl 启动 mirai, Mirai 为交互式登录，请使用 ``login 123456789 yourpassword ANDROID_PAD`` ，或使用启动参数参数 ``--account 123456789 --password yourpassword`` 来登录（如登录后有报错请忽略），请注意 login 命令中密码参数后面可以指定 QQ 所登录的终端，现阶段有 ``ANDROID_PHONE``, ``ANDROID_PAD``, ``ANDROID_WATCH`` 可供选择
+6. 使用 mcl 启动 mirai, Mirai 为交互式登录，请使用 ``login 123456789 yourpassword ANDROID_PAD`` （如登录后有报错请忽略），请注意 login 命令中密码参数后面可以指定 QQ 所登录的终端，现阶段有 ``ANDROID_PHONE``, ``ANDROID_PAD``, ``ANDROID_WATCH`` 可供选择
 
 7. 使用 ``ehforwarderbot`` 命令启动 EFB
 
