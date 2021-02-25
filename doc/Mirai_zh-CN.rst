@@ -20,7 +20,7 @@ Mirai 模式(Mirai-http-api):
 
 3. 安装完 MCL 和 mirai 后请使用 MCL 安装 `mirai-api-http <https://github.com/project-mirai/mirai-api-http>`_，现阶段的安装命令为 ``./mcl --update-package net.mamoe:mirai-api-http --channel stable --type plugin``
 
-4. 编辑 ``config/MiraiApiHttp/setting.yml`` 配置文件，其中需要留意的是需要自己设置一个 authKey，可使用随机密码生成器生成一个足够长的字符串，具体参见 `此处 <https://github.com/project-mirai/mirai-api-http#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8>`_ ，以下是样例
+4. 编辑 ``config/net.mamoe.mirai-api-http/setting.yml`` 配置文件，其中需要留意的是需要自己设置一个 authKey，可使用随机密码生成器生成一个足够长的字符串，具体参见 `此处 <https://github.com/project-mirai/mirai-api-http#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8>`_ ，以下是样例
 
 .. code:: yml
 
