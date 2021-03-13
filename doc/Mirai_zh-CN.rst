@@ -106,6 +106,7 @@ Mirai 模式(Mirai-http-api):
           interval: 1500
         http:
           enable: true
+          # 请注意是否为true
           host: 127.0.0.1
           port: 5700
           accessToken: ac0f790e1fb74ebcaf45da77a6f9de47
@@ -117,16 +118,7 @@ Mirai 模式(Mirai-http-api):
 
 其中需要修改的为 QQ 号及 accessToken，accessToken 需与 EQS 中的配置一致
 
-需要 **重点** 注意的地方是
-
-.. code:: yml
-
-        http:
-          enable: true
-
-上述配置文件中 **enable** 必须为 **true** 否则将无法正常开启EFB
-
-7. 配置 EQS 端
+8. 配置 EQS 端
     与酷Q版的配置几乎完全一致，除了要确认下 API Root 地址 和 efb-qq-slave 所监听的地址
 
 .. code:: yaml
@@ -144,4 +136,4 @@ Mirai 模式(Mirai-http-api):
 
 需要注意的是其实 port 下面的配置都是无效的，只是为了兼容酷Q，is_pro 请保持为 true
 
-8. 再次启动 Mirai并登录（ Mirai 为交互式登录，请使用 ``login 123456789 yourpassword`` ，或使用启动参数参数 ``--account 123456789 --password yourpassword`` 来登录（如登录后有报错请忽略），开启EFB后，重启 Mirai 即可
+9. 再次启动 Mirai并登录（ Mirai 为交互式登录，请使用 ``login 123456789 yourpassword`` ，或使用启动参数参数 ``--account 123456789 --password yourpassword`` 来登录（如登录后有报错请忽略），开启EFB后，重启 Mirai 即可
