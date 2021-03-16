@@ -30,7 +30,8 @@
       qq: 1234567890              # 此处填写登录的QQ号
       host: "http://127.0.0.1"    # 默认IP为本地
       port: 8888                  # 默认端口为 8888
-
+      receive_self_msg: False     # 不接收自己发出的消息
+      
 如果有别的特殊设置还请按照文档自行修改
 
 4. 启动 ehforwarderbot
