@@ -59,6 +59,8 @@ EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 
 酷Q: `酷Q API通用配置教程 <doc/CoolQ_zh-CN.rst>`_
 
+go-cqhttp: `go-cqhttp 通用配置教程 <https://github.com/XYenon/efb-qq-plugin-go-cqhttp>`_
+
 Mirai: `Mirai 客户端配置教程 <doc/Mirai_zh-CN.rst>`_
 
 IOTBot: `IOTBot 客户端配置教程 <doc/IOT_zh-CN.rst>`_
