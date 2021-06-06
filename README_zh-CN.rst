@@ -53,12 +53,13 @@ EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 
    各种QQ客户端的详细配置步骤如下。
 
-**目前 efb-qq-slave 仅支持 酷Q 客户端模式**
 
 客户端们:
 ------------------------------
 
 酷Q: `酷Q API通用配置教程 <doc/CoolQ_zh-CN.rst>`_
+
+go-cqhttp: `go-cqhttp 配置教程 <https://github.com/XYenon/efb-qq-plugin-go-cqhttp>`_
 
 Mirai: `Mirai 客户端配置教程 <doc/Mirai_zh-CN.rst>`_
 
@@ -75,7 +76,7 @@ FAQs
   
 * Q - 如何在 主端(Telegram) 编辑消息？
   
-  A - 直接使用 Telegram 的编辑消息功能即可 (目前Mirai客户端暂不支持)
+  A - 直接使用 Telegram 的编辑消息功能即可 (目前Mirai客户端的兼容模式暂不支持)
 
 注意事项
 ------------------------------
