@@ -50,23 +50,7 @@ class BaseClient(ABC):
 
     @abstractmethod
     def get_login_info(self) -> Dict[Any, Any]:
-        """Retrieve Client Info
-        :rtype: Dict
-        status =>
-            0 => Logged In
-            1 => Not Logged In
-        If status == 0 then
-        data =>
-            uid => User QQ Id
-            nickname => User nickname
-        """
         raise NotImplementedError
-
-    """
-    @abstractmethod
-    def get_stranger_info(self, user_id):
-        raise NotImplementedError
-    """
 
     def get_stranger_info(self, user_id):
         raise NotImplementedError
