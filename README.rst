@@ -1,30 +1,15 @@
 ########################################################################
-EFB QQ Slave Channel
+EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 ########################################################################
-
-.. image:: https://img.shields.io/badge/Python->%3D%203.6-blue.svg
-   :alt: Python >= 3.6
-   :target: https://www.python.org/
-.. image:: https://img.shields.io/pypi/v/efb-qq-slave.svg
-   :alt: PyPI release
-   :target: https://pypi.org/project/efb-qq-slave/
-.. image:: https://img.shields.io/pypi/dm/efb-qq-slave.svg
-   :alt: Downloads per month
-   :target: https://pypi.org/project/efb-qq-slave/
 
 .. figure:: https://i.imgur.com/KHhlL6c.png
    :alt: This project proudly supports #SayNoToQQ campaign.
 
-
 **Channel ID**: ``milkice.qq``
 
-*Warning: This project is under heavy refactoring and only the basic operation is supported at this moment. The new project is expected to be completed in mid-Feb 2021. Any contributions are welcomed!*
-
-`中文文档 <README_zh-CN.rst>`_
-
-*******************************************
-Software dependencies
-*******************************************
+***********************
+软件依赖
+***********************
 
 -  Python >= 3.6
 -  EH Forwarder Bot >= 2.0.0
@@ -32,51 +17,64 @@ Software dependencies
 -  libmagic
 -  pillow
 
+
 ******************
-Installation
+安装与启用
 ******************
 
-This project is still in Alpha, use at your own risk
+本项目目前仍是 Alpha 版本，仍不稳定，且功能可能随时变更。
 
-At this stage, please follow the following steps to install this package and start testing.
+现阶段，请按照以下步骤安装此软件包并开始测试。
 
-1. Install the binary dependencies and EH forwarder bot.
+1. 安装依赖及 EH forwarder bot
 
-2. Install via pip
+   ``pip3 install ehforwarderbot``
 
-   ``pip3 install efb-qq-slave``
+2. pip 安装 efb-qq-slave 及 efb-telegram-master
 
-3. Enable ``milkice.qq`` slave channel in your ``<profile directory>/config.yaml``.
+   ``pip3 install -U git+https://github.com/milkice233/efb-qq-slave``
+   
+   ``pip3 install efb-telegram-master``
 
-   *Usually, this file is located in* ``~/.ehforwarderbot/profiles/default/config.yaml``
+3. 配置EFB在当前配置文件夹 (Profile) ``<profile directory>/config.yaml`` 的 ``config.yaml`` 中启用主端 ``blueset.telegram`` 与附端 ``milkice.qq``  
 
-4. Create ``config.yaml`` file for ``milkice.qq`` slave channel to specify QQ Client.
+   当前配置文件夹的位置会根据用户的设定而改变。
 
-   The detailed configuration steps for various QQ Clients are as follows.
+   **(EFB 2.0.0a1 中，默认的配置文件夹位于**
+   ``~/.ehforwarderbot/profiles/default`` **)**
 
-**Currently efb-qq-slave only supports CoolQ Client Mode**
+4. 配置 efb-telegram-master ，详情请见 `这里 <https://github.com/blueset/efb-telegram-master>`_
 
-Clients:
+5. 为 ``milkice.qq`` EQS从端 创建配置文件 ``config.yaml`` 来指定 QQ 客户端
+
+   各种QQ客户端的详细配置步骤如下。
+
+
+客户端们:
 ------------------------------
 
-CoolQ: `CoolQ Client Configuration <doc/CoolQ_en-US.rst>`_
-Mirai: `Mirai Client Configuration <doc/Mirai_en-US.rst>`_
+酷Q: `酷Q API通用配置教程 <doc/CoolQ_zh-CN.rst>`_
+
+go-cqhttp: `go-cqhttp 配置教程 <https://github.com/XYenon/efb-qq-plugin-go-cqhttp>`_
+
+Mirai: `Mirai 客户端配置教程 <doc/Mirai_zh-CN.rst>`_
+
+IOTBot: `IOTBot 客户端配置教程 <doc/IOT_zh-CN.rst>`_
 
 FAQs
 ------------------------------
 
-**The following content is valid for all clients**
+**以下内容通用 针对所有客户端有效**
 
-* Q - How do I recall a message at the master channel (Telegram)?
+* Q - 如何在 主端(Telegram) 撤回消息？
 
-  A - If the QQ client supports the operation, please edit the message and add the ``rm``` in the front of the message to recall the message on the QQ. Please also note that the message sent can only be recalled within 2 minutes of being sent.
+  A - 如果 QQ 客户端支持该操作，请回复该消息 ``/rm`` 即可在QQ端撤回该消息 同时请注意发出的消息仅能在发出后2分钟内撤回
+  
+* Q - 如何在 主端(Telegram) 编辑消息？
+  
+  A - 直接使用 Telegram 的编辑消息功能即可 (目前Mirai客户端的兼容模式暂不支持)
 
-* Q - How do I edit a message on the master channel (Telegram)?
-
-  A - Directly use Telegram's edit message feature
-
-Notes
+注意事项
 ------------------------------
 
-* For end users, it's highly not recommended to test this project as mysterious bugs may occur and it's pretty disgusting for users who have no experience with Python to deal with it.
-* For developers, contributions & issues are welcomed.
+* 目前项目并不稳定，欢迎提交Issue
