@@ -105,7 +105,5 @@ class QQMessengerChannel(SlaveChannel):
         return methods
 
     def __getattr__(self, name):
-        def method(*args, **kwargs):
-            func = getattr(self.QQClient, name)
-            func(*args, **kwargs)
-        return method
+        func = getattr(self.QQClient, name)
+        return func
