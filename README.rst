@@ -47,19 +47,19 @@ EFB QQ Slave Channel：EFB QQ 从端 (EQS)
 
 5. 为 ``milkice.qq`` EQS从端 创建配置文件 ``config.yaml`` 来指定 QQ 客户端
 
-   各种QQ客户端的详细配置步骤如下。
+   各种QQ客户端的详细配置步骤如下，用户可选择一个客户端进行配置，无需全部配置。
 
 
 客户端们:
 ------------------------------
 
-酷Q: `酷Q API通用配置教程 <doc/CoolQ_zh-CN.rst>`_
-
-go-cqhttp: `go-cqhttp 配置教程 <https://github.com/XYenon/efb-qq-plugin-go-cqhttp>`_
+go-cqhttp: `go-cqhttp 配置教程 <https://github.com/XYenon/efb-qq-plugin-go-cqhttp>`_ (由XYenon贡献)
 
 Mirai: `Mirai 客户端配置教程 <doc/Mirai_zh-CN.rst>`_
 
 IOTBot: `IOTBot 客户端配置教程 <doc/IOT_zh-CN.rst>`_
+
+酷Q: `酷Q API通用配置教程 <doc/CoolQ_zh-CN.rst>`_ (请注意酷Q已无法使用，该文档仅供支持CQHTTP协议的QQ客户端使用，普通用户应该查阅上面的文档)
 
 FAQs
 ------------------------------
