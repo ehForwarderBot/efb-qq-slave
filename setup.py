@@ -7,7 +7,7 @@ if sys.version_info < (3, 6):
 __version__ = ""
 exec(open('efb_qq_slave/__version__.py').read())
 
-long_description = open('README.rst').read()
+long_description = open('README.rst', encoding='utf-8').read()
 
 setup(
     name='efb-qq-slave',
