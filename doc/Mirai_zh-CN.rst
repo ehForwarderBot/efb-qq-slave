@@ -3,7 +3,7 @@
 
 Mirai 有两种配置方式，一种是参照 OneBot 标准的兼容模式。在这种模式下许多功能不可用（因为 OneBot 标准原本是面向酷Q设计的，有一部分特性 Mirai 不支持），另外一种就是专门为 Mirai 适配的 Mirai 模式。以下模式任选其一进行配置。
 
-Mirai 模式(Mirai-http-api):
+Mirai 模式(mirai-api-http):
 -------------------------------------
 
 所需依赖及条件
@@ -22,7 +22,7 @@ Mirai 模式(Mirai-http-api):
 
 3. 安装完 MCL 和 mirai 后请使用 MCL 安装 `mirai-api-http <https://github.com/project-mirai/mirai-api-http>`_，efb-qq-plugin-mirai 从 v2.0.7 开始支持 mirai-api-http 2.x 版本，2.x版本的安装命令为 ``./mcl --update-package net.mamoe:mirai-api-http --channel stable-v2 --type plugin``
 
-4. 编辑 ``config/net.mamoe.mirai-api-http/setting.yml`` 配置文件，其中需要留意的是需要自己设置一个 verifyKey，可使用随机密码生成器生成一个足够长的字符串，具体参见 `此处 <https://github.com/project-mirai/mirai-api-http#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8>`_ ，以下是样例（这里假设 mirai-http-api 监听在 127.0.0.1:8080）
+4. 编辑 ``config/net.mamoe.mirai-api-http/setting.yml`` 配置文件，其中需要留意的是需要自己设置一个 verifyKey，可使用随机密码生成器生成一个足够长的字符串，具体参见 `此处 <https://github.com/project-mirai/mirai-api-http#%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8>`_ ，以下是样例（这里假设 mirai-api-http 监听在 127.0.0.1:8080）
 
 .. code:: yml
 
