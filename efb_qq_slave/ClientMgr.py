@@ -22,7 +22,10 @@ class ClientMgr:
         try:
             for entry_point in pkg_resources.iter_entry_points('ehforwarderbot.qq.plugin'):
                 if entry_point.name == name:
-                    c = entry_point.load()
+                    try:
+                        c = entry_point.load()
+                    except:
+                        raise Exception(f"Cannot successfully load {name}")
                     cls = getattr(c, name)
                     self.client = cls(name, config, channel)
                     return
