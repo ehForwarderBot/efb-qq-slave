@@ -61,6 +61,9 @@ class BaseClient(ABC):
     def get_chat_picture(self, chat: 'Chat') -> BinaryIO:
         raise NotImplementedError
 
+    def get_msg_picture(self, msg: 'Message') -> BinaryIO:
+        raise NotImplementedError
+
     def get_chat(self, chat_uid: ChatID) -> 'Chat':
         raise NotImplementedError
 
