@@ -85,8 +85,8 @@ class QQMessengerChannel(SlaveChannel):
     def get_chat_picture(self, chat: 'Chat') -> BinaryIO:
         return self.QQClient.get_chat_picture(chat)
 
-    def get_msg_picture(self, msg: 'Message') -> BinaryIO:
-        return self.QQClient.get_msg_picture(msg)
+    def get_chat_member_picture(self, chat_member: 'ChatMember') -> BinaryIO:
+        return self.QQClient.get_chat_member_picture(chat_member)
 
     def get_chats(self) -> Collection['Chat']:
         return self.QQClient.get_chats()
