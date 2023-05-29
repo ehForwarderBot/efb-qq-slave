@@ -78,3 +78,8 @@ FAQs
 ------------------------------
 
 * 目前项目并不稳定，欢迎提交Issue
+
+贡献
+------------------------------
+
+* 欢迎创建新的client: `添加新的客户端 <doc/contribute/NewClient_zh-CN.rst>`_ 或者 `Add a new client <doc/contribute/NewClient_en_US.rst>`_
