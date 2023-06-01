@@ -31,8 +31,6 @@ class QQMessengerChannel(SlaveChannel):
     supported_message_types = {MsgType.Text, MsgType.Sticker, MsgType.Image,
                                MsgType.Link, MsgType.Voice, MsgType.Animation}
 
-    # todo supported_message can be dynamically defined by Client
-
     config = dict()
     QQClientMgr: ClientMgr
     QQClient: BaseClient
@@ -42,6 +40,9 @@ class QQMessengerChannel(SlaveChannel):
         super().__init__(instance_id)
         self.load_config()
         self.init_client_manager()
+
+        if hasattr(self.QQClient, "supported_message_types"):
+            self.supported_message_types = self.QQClient.supported_message_types()
 
     def check_updates(self):
         try:
